@@ -433,9 +433,9 @@ function setDiag(msg) {
   if (el) el.innerText = msg || '';
 }
 
-window.addEventListener('error', (ev) => {
-  setDiag('错误：' + (ev.message || '未知错误'));
-});
+window.onerror = function (message, source, lineno) {
+  setDiag(`错误 (${lineno || '?'}行): ${message || '未知错误'}`);
+};
 
 window.addEventListener('unhandledrejection', (ev) => {
   const r = ev.reason;
@@ -1309,11 +1309,6 @@ function loop(now = performance.now()) {
   }
 
   requestAnimationFrame(loop);
-}
-
-const startBtn = document.getElementById('start-btn');
-if (startBtn) {
-  startBtn.addEventListener('click', startGame);
 }
 
 if (IS_TV_MODE) {
