@@ -105,7 +105,7 @@
   .overlay {
     position: absolute;
     inset: 0;
-    background: rgba(11, 15, 22, 0.93);
+    background: rgba(11, 15, 22, 0.94);
     backdrop-filter: blur(4px);
     display: flex;
     flex-direction: column;
@@ -126,7 +126,7 @@
     color: #8b949e;
     font-size: 14px;
     line-height: 1.5;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
   input {
     width: 84%;
@@ -160,6 +160,14 @@
     background: #21262d;
     border: 1px solid #30363d;
     font-weight: 600;
+  }
+  #diag-msg {
+    width: 90%;
+    min-height: 20px;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #f59e0b;
+    word-break: break-all;
   }
   .quiz-box {
     background: #161b22;
@@ -375,6 +383,7 @@
     <input type="text" id="username" placeholder="输入姓名 / 学号后四位" maxlength="10" autocomplete="off">
     <button id="start-btn" type="button" onclick="startGame()">开始挑战</button>
     <button class="secondary" type="button" onclick="showLeaderboard()">查看全员排行榜</button>
+    <div id="diag-msg"></div>
   </div>
 
   <div id="quiz-screen" class="overlay hidden">
@@ -419,11 +428,20 @@
 </div>
 
 <script>
+function setDiag(msg) {
+  const el = document.getElementById('diag-msg');
+  if (el) el.innerText = msg || '';
+}
+
 window.addEventListener('error', (ev) => {
-  alert('脚本错误：' + (ev.message || '未知错误'));
+  setDiag('错误：' + (ev.message || '未知错误'));
 });
 
-// ================= 云端共享排行榜配置 (Supabase) =================
+window.addEventListener('unhandledrejection', (ev) => {
+  const r = ev.reason;
+  setDiag('异步错误：' + (r && r.message ? r.message : String(r || '')));
+});
+
 const SUPABASE_URL = 'https://tnfradylbcvarcwlvldd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_3tzC_0a6eT2vWkgg7pYaqQ_rs4u068e';
 const LOCAL_RANK_KEY = 'youth_game_rank';
@@ -583,7 +601,6 @@ async function renderTvLeaderboard() {
   `).join('');
 }
 
-// ================= 纯 JS 音效引擎 (Web Audio API) =================
 const SoundFX = (() => {
   let ctx = null;
   let muted = false;
@@ -653,7 +670,6 @@ function toggleMute() {
   document.getElementById('sound-btn').innerText = next ? '🔇 已静音' : '🔊 音效开';
 }
 
-// ================= 里程碑、速度曲线与题库配置 =================
 const MILESTONES = [
   { height: 100, title: '🔥 100m 星火初燃 · 青年启航' },
   { height: 300, title: '⚡ 300m 青春逐梦 · 双轨进阶' },
@@ -782,7 +798,6 @@ const OBSTACLE_TYPES = [
   { label: 'LOOP', color: '#9333ea', speedMult: 0.94, width: 72, wobble: 0 }
 ];
 
-// ================= 游戏核心状态 =================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const LANES = 3;
@@ -820,7 +835,8 @@ function getLaneX(lane) {
 
 function resize() {
   if (IS_TV_MODE) return;
-  const rect = canvas.parentElement.getBoundingClientRect();
+  const parent = canvas.parentElement;
+  const rect = parent ? parent.getBoundingClientRect() : { width: 360, height: 640 };
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   W = Math.max(240, rect.width || window.innerWidth || 360);
   H = Math.max(400, rect.height || window.innerHeight || 640);
@@ -837,20 +853,37 @@ function resize() {
 window.addEventListener('resize', resize);
 
 function startGame() {
-  const inputEl = document.getElementById('username');
-  const inputName = (inputEl && inputEl.value ? inputEl.value : '').trim();
-  if (!inputName) {
-    alert('请先输入姓名或学号后四位，方便上榜排名哦！');
-    return;
+  try {
+    setDiag('');
+    const inputEl = document.getElementById('username');
+    const rawVal = inputEl && typeof inputEl.value === 'string' ? inputEl.value : '';
+    const inputName = rawVal.trim();
+    if (!inputName) {
+      setDiag('请先输入姓名或学号后四位！');
+      alert('请先输入姓名或学号后四位，方便上榜排名哦！');
+      return;
+    }
+    if (inputEl && typeof inputEl.blur === 'function') {
+      inputEl.blur();
+    }
+    username = inputName;
+    const tagEl = document.getElementById('player-tag');
+    if (tagEl) tagEl.innerText = username;
+
+    const startScreen = document.getElementById('start-screen');
+    const overScreen = document.getElementById('over-screen');
+    if (startScreen) {
+      startScreen.classList.add('hidden');
+      startScreen.style.display = 'none';
+    }
+    if (overScreen) {
+      overScreen.classList.add('hidden');
+      overScreen.style.display = 'none';
+    }
+    resetGame();
+  } catch (err) {
+    setDiag('启动失败：' + (err && err.message ? err.message : String(err)));
   }
-  if (inputEl && typeof inputEl.blur === 'function') {
-    inputEl.blur();
-  }
-  username = inputName;
-  document.getElementById('player-tag').innerText = username;
-  document.getElementById('start-screen').classList.add('hidden');
-  document.getElementById('over-screen').classList.add('hidden');
-  resetGame();
 }
 
 function resetGame() {
@@ -878,13 +911,25 @@ function resetGame() {
 }
 
 function restartGame() {
-  document.getElementById('over-screen').classList.add('hidden');
+  const overScreen = document.getElementById('over-screen');
+  if (overScreen) {
+    overScreen.classList.add('hidden');
+    overScreen.style.display = 'none';
+  }
   resetGame();
 }
 
 function backToStart() {
-  document.getElementById('over-screen').classList.add('hidden');
-  document.getElementById('start-screen').classList.remove('hidden');
+  const overScreen = document.getElementById('over-screen');
+  const startScreen = document.getElementById('start-screen');
+  if (overScreen) {
+    overScreen.classList.add('hidden');
+    overScreen.style.display = 'none';
+  }
+  if (startScreen) {
+    startScreen.classList.remove('hidden');
+    startScreen.style.display = '';
+  }
   gameState = 'START';
 }
 
@@ -1069,7 +1114,9 @@ function gameOver() {
   document.getElementById('final-score').innerText = score;
   document.getElementById('best-badge').innerText = '';
   document.getElementById('rank-list').innerHTML = '<div style="color:#8b949e; padding:22px;">正在同步全员榜单...</div>';
-  document.getElementById('over-screen').classList.remove('hidden');
+  const overScreen = document.getElementById('over-screen');
+  overScreen.classList.remove('hidden');
+  overScreen.style.display = '';
 
   saveScore(username, score).then((isNewBest) => {
     if (gameState === 'OVER' && isNewBest) {
@@ -1080,8 +1127,16 @@ function gameOver() {
 }
 
 function showLeaderboard() {
-  document.getElementById('start-screen').classList.add('hidden');
-  document.getElementById('over-screen').classList.remove('hidden');
+  const startScreen = document.getElementById('start-screen');
+  const overScreen = document.getElementById('over-screen');
+  if (startScreen) {
+    startScreen.classList.add('hidden');
+    startScreen.style.display = 'none';
+  }
+  if (overScreen) {
+    overScreen.classList.remove('hidden');
+    overScreen.style.display = '';
+  }
   document.getElementById('over-title').innerText = '🏆 全员排行榜';
   document.getElementById('final-score').innerText = '-';
   document.getElementById('best-badge').innerText = '';
@@ -1254,6 +1309,11 @@ function loop(now = performance.now()) {
   }
 
   requestAnimationFrame(loop);
+}
+
+const startBtn = document.getElementById('start-btn');
+if (startBtn) {
+  startBtn.addEventListener('click', startGame);
 }
 
 if (IS_TV_MODE) {
