@@ -1,1324 +1,1426 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>步步星火 · 团日极客挑战赛</title>
-<style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  input, textarea {
-    user-select: text;
-    -webkit-user-select: text;
-  }
-  html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    overscroll-behavior: none;
-    background: #0d1117;
-    color: #c9d1d9;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", monospace;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  #game-container {
-    position: relative;
-    width: 100%;
-    max-width: 440px;
-    height: 100%;
-    max-height: 920px;
-    background: #121720;
-    border-left: 1px solid #263042;
-    border-right: 1px solid #263042;
-    overflow: hidden;
-  }
-  canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-    touch-action: none;
-  }
-  #hud {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    right: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 16px;
-    font-weight: 700;
-    pointer-events: none;
-    z-index: 6;
-  }
-  .hud-pill {
-    background: rgba(13, 17, 23, 0.78);
-    border: 1px solid rgba(139, 148, 158, 0.25);
-    backdrop-filter: blur(6px);
-    padding: 6px 12px;
-    border-radius: 999px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  #sound-btn {
-    pointer-events: auto;
-    width: auto;
-    padding: 6px 10px;
-    margin: 0;
-    font-size: 13px;
-    border-radius: 999px;
-    background: rgba(33, 38, 45, 0.9);
-    border: 1px solid #30363d;
-  }
-  #milestone-banner {
-    position: absolute;
-    top: 62px;
-    left: 50%;
-    transform: translate(-50%, -20px);
-    background: linear-gradient(90deg, rgba(218, 54, 51, 0.95), rgba(245, 158, 11, 0.95));
-    color: #fff;
-    font-weight: 800;
-    font-size: 14px;
-    padding: 7px 18px;
-    border-radius: 999px;
-    box-shadow: 0 6px 20px rgba(218, 54, 51, 0.45);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    z-index: 7;
-    white-space: nowrap;
-  }
-  #milestone-banner.show {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-  .overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(11, 15, 22, 0.94);
-    backdrop-filter: blur(4px);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 24px;
-    text-align: center;
-    z-index: 10;
-  }
-  .hidden { display: none !important; }
-  h1 {
-    color: #ff5555;
-    font-size: 28px;
-    margin-bottom: 8px;
-    text-shadow: 0 0 14px rgba(255, 85, 85, 0.45);
-  }
-  .subtitle {
-    color: #8b949e;
-    font-size: 14px;
-    line-height: 1.5;
-    margin-bottom: 18px;
-  }
-  input {
-    width: 84%;
-    padding: 12px 14px;
-    font-size: 16px;
-    background: #0d1117;
-    border: 1px solid #30363d;
-    color: #fff;
-    border-radius: 8px;
-    margin-bottom: 14px;
-    text-align: center;
-    outline: none;
-  }
-  input:focus { border-color: #ff5555; }
-  button {
-    width: 84%;
-    padding: 13px;
-    font-size: 16px;
-    font-weight: 700;
-    background: #da3633;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-bottom: 10px;
-    transition: transform 0.1s ease, background 0.15s ease;
-  }
-  button:active:not(:disabled) { transform: scale(0.97); }
-  button:disabled { opacity: 0.85; cursor: default; }
-  button.secondary {
-    background: #21262d;
-    border: 1px solid #30363d;
-    font-weight: 600;
-  }
-  #diag-msg {
-    width: 90%;
-    min-height: 20px;
-    margin-top: 6px;
-    font-size: 12px;
-    color: #f59e0b;
-    word-break: break-all;
-  }
-  .quiz-box {
-    background: #161b22;
-    border: 1px solid #f59e0b;
-    border-radius: 10px;
-    padding: 16px;
-    width: 100%;
-    max-height: 78vh;
-    overflow-y: auto;
-    margin-bottom: 12px;
-  }
-  .quiz-q {
-    font-size: 15px;
-    font-weight: 700;
-    margin-bottom: 12px;
-    color: #fff;
-    line-height: 1.45;
-  }
-  .quiz-opt {
-    width: 100%;
-    text-align: left;
-    padding: 10px 14px;
-    margin-bottom: 8px;
-    background: #21262d;
-    border: 1px solid #30363d;
-    font-weight: 500;
-    font-size: 14px;
-  }
-  .quiz-opt.correct {
-    background: rgba(63, 185, 80, 0.22);
-    border-color: #3fb950;
-    color: #7ee787;
-  }
-  .quiz-opt.wrong {
-    background: rgba(248, 81, 73, 0.22);
-    border-color: #f85149;
-    color: #ffa198;
-  }
-  .quiz-explain {
-    display: none;
-    margin-top: 10px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    background: #0d1117;
-    border: 1px solid #30363d;
-    font-size: 13px;
-    line-height: 1.55;
-    color: #e6edf3;
-    text-align: left;
-  }
-  .quiz-explain.show { display: block; }
-  #quiz-next-btn {
-    width: 100%;
-    margin-top: 10px;
-    margin-bottom: 0;
-  }
-  .rank-list {
-    width: 100%;
-    max-height: 250px;
-    overflow-y: auto;
-    background: #0d1117;
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin-bottom: 16px;
-    border: 1px solid #30363d;
-  }
-  .rank-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 9px 4px;
-    border-bottom: 1px solid #1c222b;
-    font-size: 14px;
-  }
-  .rank-item:last-child { border-bottom: none; }
-  .rank-item:nth-child(1) { color: #ffd700; font-weight: 700; }
-  .rank-item:nth-child(2) { color: #d0d7de; font-weight: 700; }
-  .rank-item:nth-child(3) { color: #d97706; font-weight: 700; }
-  .hint-bar {
-    position: absolute;
-    bottom: 16px;
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    color: rgba(255, 255, 255, 0.34);
-    font-size: 12px;
-    pointer-events: none;
-    z-index: 5;
-  }
 
-  body.tv-mode {
-    overflow: auto;
-    display: block;
-    background: radial-gradient(circle at top, #1b2436 0%, #0d1117 65%);
-  }
-  body.tv-mode #game-container,
-  body.tv-mode #hud,
-  body.tv-mode #milestone-banner,
-  body.tv-mode .hint-bar,
-  body.tv-mode #start-screen,
-  body.tv-mode #quiz-screen,
-  body.tv-mode #over-screen {
-    display: none !important;
-  }
-  #tv-view {
-    display: none;
-    min-height: 100vh;
-    padding: 32px 44px;
-    max-width: 1280px;
-    margin: 0 auto;
-  }
-  body.tv-mode #tv-view {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-  .tv-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #263042;
-    padding-bottom: 18px;
-  }
-  .tv-title {
-    font-size: 36px;
-    font-weight: 800;
-    color: #ff6b6b;
-    letter-spacing: 1px;
-  }
-  .tv-meta {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    font-size: 15px;
-    color: #8b949e;
-  }
-  .tv-refresh-btn {
-    width: auto;
-    margin: 0;
-    padding: 9px 16px;
-    font-size: 14px;
-    background: #21262d;
-    border: 1px solid #30363d;
-  }
-  .tv-board {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px 28px;
-    background: rgba(18, 23, 32, 0.88);
-    border: 1px solid #263042;
-    border-radius: 16px;
-    padding: 24px 28px;
-  }
-  .tv-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    border-radius: 10px;
-    background: #0d1117;
-    border: 1px solid #1c222b;
-    font-size: 20px;
-  }
-  .tv-row:nth-child(1) {
-    border-color: rgba(255, 215, 0, 0.6);
-    color: #ffd700;
-    font-weight: 800;
-  }
-  .tv-row:nth-child(2) {
-    border-color: rgba(208, 215, 222, 0.45);
-    color: #e6edf3;
-    font-weight: 700;
-  }
-  .tv-row:nth-child(3) {
-    border-color: rgba(217, 119, 6, 0.5);
-    color: #f59e0b;
-    font-weight: 700;
-  }
-  .tv-score {
-    color: #ff6b6b;
-    font-weight: 800;
-  }
-  @media (max-width: 768px) {
-    body.tv-mode #tv-view { padding: 20px 16px; }
-    .tv-title { font-size: 24px; }
-    .tv-board { grid-template-columns: 1fr; padding: 16px; }
-    .tv-row { font-size: 16px; }
-  }
-</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>步步星火 · 团日极客挑战赛</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        input,
+        textarea {
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            overscroll-behavior: none;
+            background: #0d1117;
+            color: #c9d1d9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 440px;
+            height: 100%;
+            max-height: 920px;
+            background: #121720;
+            border-left: 1px solid #263042;
+            border-right: 1px solid #263042;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        #hud {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            right: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 700;
+            pointer-events: none;
+            z-index: 6;
+        }
+
+        .hud-pill {
+            background: rgba(13, 17, 23, 0.78);
+            border: 1px solid rgba(139, 148, 158, 0.25);
+            backdrop-filter: blur(6px);
+            padding: 6px 12px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #sound-btn {
+            pointer-events: auto;
+            width: auto;
+            padding: 6px 10px;
+            margin: 0;
+            font-size: 13px;
+            border-radius: 999px;
+            background: rgba(33, 38, 45, 0.9);
+            border: 1px solid #30363d;
+        }
+
+        #milestone-banner {
+            position: absolute;
+            top: 62px;
+            left: 50%;
+            transform: translate(-50%, -20px);
+            background: linear-gradient(90deg, rgba(218, 54, 51, 0.95), rgba(245, 158, 11, 0.95));
+            color: #fff;
+            font-weight: 800;
+            font-size: 14px;
+            padding: 7px 18px;
+            border-radius: 999px;
+            box-shadow: 0 6px 20px rgba(218, 54, 51, 0.45);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            z-index: 7;
+            white-space: nowrap;
+        }
+
+        #milestone-banner.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(11, 15, 22, 0.94);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 {
+            color: #ff5555;
+            font-size: 28px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 14px rgba(255, 85, 85, 0.45);
+        }
+
+        .subtitle {
+            color: #8b949e;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+
+        input {
+            width: 84%;
+            padding: 12px 14px;
+            font-size: 16px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #fff;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            text-align: center;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #ff5555;
+        }
+
+        button {
+            width: 84%;
+            padding: 13px;
+            font-size: 16px;
+            font-weight: 700;
+            background: #da3633;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: transform 0.1s ease, background 0.15s ease;
+        }
+
+        button:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        button:disabled {
+            opacity: 0.85;
+            cursor: default;
+        }
+
+        button.secondary {
+            background: #21262d;
+            border: 1px solid #30363d;
+            font-weight: 600;
+        }
+
+        #diag-msg {
+            width: 90%;
+            min-height: 20px;
+            margin-top: 6px;
+            font-size: 12px;
+            color: #f59e0b;
+            word-break: break-all;
+        }
+
+        .quiz-box {
+            background: #161b22;
+            border: 1px solid #f59e0b;
+            border-radius: 10px;
+            padding: 16px;
+            width: 100%;
+            max-height: 78vh;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+
+        .quiz-q {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #fff;
+            line-height: 1.45;
+        }
+
+        .quiz-opt {
+            width: 100%;
+            text-align: left;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .quiz-opt.correct {
+            background: rgba(63, 185, 80, 0.22);
+            border-color: #3fb950;
+            color: #7ee787;
+        }
+
+        .quiz-opt.wrong {
+            background: rgba(248, 81, 73, 0.22);
+            border-color: #f85149;
+            color: #ffa198;
+        }
+
+        .quiz-explain {
+            display: none;
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            font-size: 13px;
+            line-height: 1.55;
+            color: #e6edf3;
+            text-align: left;
+        }
+
+        .quiz-explain.show {
+            display: block;
+        }
+
+        #quiz-next-btn {
+            width: 100%;
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+
+        .rank-list {
+            width: 100%;
+            max-height: 250px;
+            overflow-y: auto;
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+            border: 1px solid #30363d;
+        }
+
+        .rank-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 9px 4px;
+            border-bottom: 1px solid #1c222b;
+            font-size: 14px;
+        }
+
+        .rank-item:last-child {
+            border-bottom: none;
+        }
+
+        .rank-item:nth-child(1) {
+            color: #ffd700;
+            font-weight: 700;
+        }
+
+        .rank-item:nth-child(2) {
+            color: #d0d7de;
+            font-weight: 700;
+        }
+
+        .rank-item:nth-child(3) {
+            color: #d97706;
+            font-weight: 700;
+        }
+
+        .hint-bar {
+            position: absolute;
+            bottom: 16px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            color: rgba(255, 255, 255, 0.34);
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        body.tv-mode {
+            overflow: auto;
+            display: block;
+            background: radial-gradient(circle at top, #1b2436 0%, #0d1117 65%);
+        }
+
+        body.tv-mode #game-container,
+        body.tv-mode #hud,
+        body.tv-mode #milestone-banner,
+        body.tv-mode .hint-bar,
+        body.tv-mode #start-screen,
+        body.tv-mode #quiz-screen,
+        body.tv-mode #over-screen {
+            display: none !important;
+        }
+
+        #tv-view {
+            display: none;
+            min-height: 100vh;
+            padding: 32px 44px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        body.tv-mode #tv-view {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .tv-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #263042;
+            padding-bottom: 18px;
+        }
+
+        .tv-title {
+            font-size: 36px;
+            font-weight: 800;
+            color: #ff6b6b;
+            letter-spacing: 1px;
+        }
+
+        .tv-meta {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 15px;
+            color: #8b949e;
+        }
+
+        .tv-refresh-btn {
+            width: auto;
+            margin: 0;
+            padding: 9px 16px;
+            font-size: 14px;
+            background: #21262d;
+            border: 1px solid #30363d;
+        }
+
+        .tv-board {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px 28px;
+            background: rgba(18, 23, 32, 0.88);
+            border: 1px solid #263042;
+            border-radius: 16px;
+            padding: 24px 28px;
+        }
+
+        .tv-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: #0d1117;
+            border: 1px solid #1c222b;
+            font-size: 20px;
+        }
+
+        .tv-row:nth-child(1) {
+            border-color: rgba(255, 215, 0, 0.6);
+            color: #ffd700;
+            font-weight: 800;
+        }
+
+        .tv-row:nth-child(2) {
+            border-color: rgba(208, 215, 222, 0.45);
+            color: #e6edf3;
+            font-weight: 700;
+        }
+
+        .tv-row:nth-child(3) {
+            border-color: rgba(217, 119, 6, 0.5);
+            color: #f59e0b;
+            font-weight: 700;
+        }
+
+        .tv-score {
+            color: #ff6b6b;
+            font-weight: 800;
+        }
+
+        @media (max-width: 768px) {
+            body.tv-mode #tv-view {
+                padding: 20px 16px;
+            }
+
+            .tv-title {
+                font-size: 24px;
+            }
+
+            .tv-board {
+                grid-template-columns: 1fr;
+                padding: 16px;
+            }
+
+            .tv-row {
+                font-size: 16px;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-<div id="game-container">
-  <div id="hud">
-    <div class="hud-pill">
-      <span>高度 <strong id="score-display" style="color:#ff5555">0</strong>m</span>
-      <span style="color:#484f58">|</span>
-      <span id="player-tag" style="color:#58a6ff; font-size:14px;">游客</span>
+    <div id="game-container">
+        <div id="hud">
+            <div class="hud-pill">
+                <span>高度 <strong id="score-display" style="color:#ff5555">0</strong>m</span>
+                <span style="color:#484f58">|</span>
+                <span id="player-tag" style="color:#58a6ff; font-size:14px;">游客</span>
+            </div>
+            <button id="sound-btn" type="button" onclick="toggleMute()">🔊 音效开</button>
+        </div>
+
+        <div id="milestone-banner">🏅 里程碑达成！</div>
+
+        <canvas id="gameCanvas"></canvas>
+        <div class="hint-bar">
+            <span>👈 点左侧向左跳</span>
+            <span>点右侧向右跳 👉</span>
+        </div>
+
+        <div id="start-screen" class="overlay">
+            <h1>🔥 步步星火</h1>
+            <p class="subtitle">开局慢速热身，随高度逐步加速！<br>左右点击变道躲避掉落异常，冲刺更高里程碑。</p>
+            <input type="text" id="username" placeholder="输入姓名 / 学号后四位" maxlength="10" autocomplete="off">
+            <button id="start-btn" type="button" onclick="startGame()">开始挑战</button>
+            <button class="secondary" type="button" onclick="showLeaderboard()">查看全员排行榜</button>
+            <div id="diag-msg"></div>
+        </div>
+
+        <div id="quiz-screen" class="overlay hidden">
+            <h2 style="color:#ffd700; margin-bottom:6px;">⚠️ 系统遭遇突发异常</h2>
+            <p class="subtitle" style="margin-bottom:14px;">作答后查看解析，点击下方按钮继续</p>
+            <div class="quiz-box">
+                <div class="quiz-q" id="quiz-question">题目加载中...</div>
+                <div id="quiz-options"></div>
+                <div class="quiz-explain" id="quiz-explain"></div>
+                <button id="quiz-next-btn" type="button" class="hidden" onclick="handleQuizNext()">下一步</button>
+            </div>
+        </div>
+
+        <div id="over-screen" class="overlay hidden">
+            <h1 id="over-title">挑战结束</h1>
+            <p class="subtitle" style="margin-bottom:14px;">
+                本次高度：<strong id="final-score" style="color:#ff5555; font-size:22px;">0</strong> m
+                <span id="best-badge" style="display:block; color:#ffd700; font-size:13px; margin-top:4px;"></span>
+            </p>
+            <div class="rank-list" id="rank-list"></div>
+            <button type="button" onclick="restartGame()">再来一局刷榜</button>
+            <button class="secondary" type="button" onclick="backToStart()">更换昵称</button>
+        </div>
     </div>
-    <button id="sound-btn" type="button" onclick="toggleMute()">🔊 音效开</button>
-  </div>
 
-  <div id="milestone-banner">🏅 里程碑达成！</div>
-
-  <canvas id="gameCanvas"></canvas>
-  <div class="hint-bar">
-    <span>👈 点左侧向左跳</span>
-    <span>点右侧向右跳 👉</span>
-  </div>
-
-  <div id="start-screen" class="overlay">
-    <h1>🔥 步步星火</h1>
-    <p class="subtitle">开局慢速热身，随高度逐步加速！<br>左右点击变道躲避掉落异常，冲刺更高里程碑。</p>
-    <input type="text" id="username" placeholder="输入姓名 / 学号后四位" maxlength="10" autocomplete="off">
-    <button id="start-btn" type="button" onclick="startGame()">开始挑战</button>
-    <button class="secondary" type="button" onclick="showLeaderboard()">查看全员排行榜</button>
-    <div id="diag-msg"></div>
-  </div>
-
-  <div id="quiz-screen" class="overlay hidden">
-    <h2 style="color:#ffd700; margin-bottom:6px;">⚠️ 系统遭遇突发异常</h2>
-    <p class="subtitle" style="margin-bottom:14px;">作答后查看解析，点击下方按钮继续</p>
-    <div class="quiz-box">
-      <div class="quiz-q" id="quiz-question">题目加载中...</div>
-      <div id="quiz-options"></div>
-      <div class="quiz-explain" id="quiz-explain"></div>
-      <button id="quiz-next-btn" type="button" class="hidden" onclick="handleQuizNext()">下一步</button>
+    <div id="tv-view">
+        <div class="tv-header">
+            <div>
+                <div class="tv-title">🔥 步步星火 · 实时风云榜</div>
+                <div style="color:#8b949e; font-size:15px; margin-top:6px;">
+                    扫码参与挑战 · 实时同步全员最高高度
+                </div>
+            </div>
+            <div class="tv-meta">
+                <span id="tv-sync-status">等待同步...</span>
+                <button class="tv-refresh-btn" type="button" onclick="renderTvLeaderboard()">立即刷新</button>
+            </div>
+        </div>
+        <div class="tv-board" id="tv-rank-list">
+            <div style="color:#8b949e; padding:18px;">正在加载全员榜单...</div>
+        </div>
     </div>
-  </div>
 
-  <div id="over-screen" class="overlay hidden">
-    <h1 id="over-title">挑战结束</h1>
-    <p class="subtitle" style="margin-bottom:14px;">
-      本次高度：<strong id="final-score" style="color:#ff5555; font-size:22px;">0</strong> m
-      <span id="best-badge" style="display:block; color:#ffd700; font-size:13px; margin-top:4px;"></span>
-    </p>
-    <div class="rank-list" id="rank-list"></div>
-    <button type="button" onclick="restartGame()">再来一局刷榜</button>
-    <button class="secondary" type="button" onclick="backToStart()">更换昵称</button>
-  </div>
-</div>
+    <script>
+        function setDiag(msg) {
+            const el = document.getElementById('diag-msg');
+            if (el) el.innerText = msg || '';
+        }
 
-<div id="tv-view">
-  <div class="tv-header">
-    <div>
-      <div class="tv-title">🔥 步步星火 · 实时风云榜</div>
-      <div style="color:#8b949e; font-size:15px; margin-top:6px;">
-        扫码参与挑战 · 实时同步全员最高高度
-      </div>
-    </div>
-    <div class="tv-meta">
-      <span id="tv-sync-status">等待同步...</span>
-      <button class="tv-refresh-btn" type="button" onclick="renderTvLeaderboard()">立即刷新</button>
-    </div>
-  </div>
-  <div class="tv-board" id="tv-rank-list">
-    <div style="color:#8b949e; padding:18px;">正在加载全员榜单...</div>
-  </div>
-</div>
+        window.onerror = function (message, source, lineno) {
+            setDiag(`错误 (${lineno || '?'}行): ${message || '未知错误'}`);
+        };
 
-<script>
-function setDiag(msg) {
-  const el = document.getElementById('diag-msg');
-  if (el) el.innerText = msg || '';
-}
-
-window.onerror = function (message, source, lineno) {
-  setDiag(`错误 (${lineno || '?'}行): ${message || '未知错误'}`);
-};
-
-window.addEventListener('unhandledrejection', (ev) => {
-  const r = ev.reason;
-  setDiag('异步错误：' + (r && r.message ? r.message : String(r || '')));
-});
-
-const SUPABASE_URL = 'https://tnfradylbcvarcwlvldd.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_3tzC_0a6eT2vWkgg7pYaqQ_rs4u068e';
-const LOCAL_RANK_KEY = 'youth_game_rank';
-const IS_TV_MODE = new URLSearchParams(window.location.search).get('mode') === 'tv';
-
-function hasCloudConfig() {
-  return typeof SUPABASE_URL === 'string' &&
-    SUPABASE_URL.startsWith('https://') &&
-    typeof SUPABASE_ANON_KEY === 'string' &&
-    SUPABASE_ANON_KEY.trim().length > 20;
-}
-
-function readLocalRank() {
-  try {
-    return JSON.parse(localStorage.getItem(LOCAL_RANK_KEY) || '[]');
-  } catch {
-    return [];
-  }
-}
-
-function writeLocalRank(list) {
-  try {
-    localStorage.setItem(LOCAL_RANK_KEY, JSON.stringify((list || []).slice(0, 30)));
-  } catch {}
-}
-
-async function fetchLeaderboard() {
-  if (!hasCloudConfig()) return readLocalRank();
-  try {
-    const url = `${SUPABASE_URL}/rest/v1/leaderboard?select=name,score&order=score.desc&limit=30`;
-    const res = await fetch(url, {
-      headers: {
-        apikey: SUPABASE_ANON_KEY.trim(),
-        Authorization: `Bearer ${SUPABASE_ANON_KEY.trim()}`
-      }
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const rows = await res.json();
-    const normalized = rows.map(r => ({ name: r.name, score: Number(r.score) || 0 }));
-    writeLocalRank(normalized);
-    return normalized;
-  } catch {
-    return readLocalRank();
-  }
-}
-
-async function saveScore(name, newScore) {
-  const cleanName = String(name || '').trim();
-  const numericScore = Math.max(0, Number(newScore) || 0);
-  if (!cleanName) return false;
-
-  const localList = readLocalRank();
-  const localExisting = localList.find(item => item.name === cleanName);
-  const prevLocalBest = localExisting ? Number(localExisting.score) || 0 : 0;
-  let improved = numericScore > prevLocalBest;
-
-  if (localExisting) {
-    if (improved) localExisting.score = numericScore;
-  } else {
-    localList.push({ name: cleanName, score: numericScore });
-    improved = numericScore > 0;
-  }
-  localList.sort((a, b) => b.score - a.score);
-  writeLocalRank(localList);
-
-  if (!hasCloudConfig()) return improved;
-
-  const headers = {
-    apikey: SUPABASE_ANON_KEY.trim(),
-    Authorization: `Bearer ${SUPABASE_ANON_KEY.trim()}`
-  };
-
-  try {
-    const queryUrl = `${SUPABASE_URL}/rest/v1/leaderboard?name=eq.${encodeURIComponent(cleanName)}&select=score`;
-    const getRes = await fetch(queryUrl, { headers });
-    if (!getRes.ok) throw new Error(`GET ${getRes.status}`);
-    const existingRows = await getRes.json();
-    const prevCloudBest = existingRows.length > 0 ? Number(existingRows[0].score) || 0 : 0;
-
-    if (existingRows.length === 0) {
-      if (numericScore > 0) {
-        const insRes = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard`, {
-          method: 'POST',
-          headers: {
-            ...headers,
-            'Content-Type': 'application/json',
-            Prefer: 'return=minimal'
-          },
-          body: JSON.stringify({
-            name: cleanName,
-            score: numericScore,
-            updated_at: new Date().toISOString()
-          })
+        window.addEventListener('unhandledrejection', (ev) => {
+            const r = ev.reason;
+            setDiag('异步错误：' + (r && r.message ? r.message : String(r || '')));
         });
-        if (!insRes.ok) throw new Error(`POST ${insRes.status}`);
-        return true;
-      }
-      return false;
-    }
 
-    if (numericScore > prevCloudBest) {
-      const patchUrl = `${SUPABASE_URL}/rest/v1/leaderboard?name=eq.${encodeURIComponent(cleanName)}`;
-      const patchRes = await fetch(patchUrl, {
-        method: 'PATCH',
-        headers: {
-          ...headers,
-          'Content-Type': 'application/json',
-          Prefer: 'return=minimal'
-        },
-        body: JSON.stringify({
-          score: numericScore,
-          updated_at: new Date().toISOString()
-        })
-      });
-      if (!patchRes.ok) throw new Error(`PATCH ${patchRes.status}`);
-      return true;
-    }
+        const SUPABASE_URL = 'https://tnfradylbcvarcwlvldd.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_3tzC_0a6eT2vWkgg7pYaqQ_rs4u068e';
+        const LOCAL_RANK_KEY = 'youth_game_rank';
+        const IS_TV_MODE = new URLSearchParams(window.location.search).get('mode') === 'tv';
 
-    return false;
-  } catch {
-    return improved;
-  }
-}
+        function hasCloudConfig() {
+            return typeof SUPABASE_URL === 'string' &&
+                SUPABASE_URL.startsWith('https://') &&
+                typeof SUPABASE_ANON_KEY === 'string' &&
+                SUPABASE_ANON_KEY.trim().length > 20;
+        }
 
-async function renderLeaderboard() {
-  const container = document.getElementById('rank-list');
-  container.innerHTML = '<div style="color:#8b949e; padding:22px;">正在同步全员榜单...</div>';
-  const list = await fetchLeaderboard();
-  if (!list || list.length === 0) {
-    container.innerHTML = '<div style="color:#8b949e; padding:22px;">暂无成绩，快来抢占榜首！</div>';
-    return;
-  }
-  container.innerHTML = list.map((item, index) => `
+        function readLocalRank() {
+            try {
+                return JSON.parse(localStorage.getItem(LOCAL_RANK_KEY) || '[]');
+            } catch {
+                return [];
+            }
+        }
+
+        function writeLocalRank(list) {
+            try {
+                localStorage.setItem(LOCAL_RANK_KEY, JSON.stringify((list || []).slice(0, 30)));
+            } catch { }
+        }
+
+        async function fetchLeaderboard() {
+            if (!hasCloudConfig()) return readLocalRank();
+            try {
+                const url = `${SUPABASE_URL}/rest/v1/leaderboard?select=name,score&order=score.desc&limit=30`;
+                const res = await fetch(url, {
+                    headers: {
+                        apikey: SUPABASE_ANON_KEY.trim(),
+                        Authorization: `Bearer ${SUPABASE_ANON_KEY.trim()}`
+                    }
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const rows = await res.json();
+                const normalized = rows.map(r => ({ name: r.name, score: Number(r.score) || 0 }));
+                writeLocalRank(normalized);
+                return normalized;
+            } catch {
+                return readLocalRank();
+            }
+        }
+
+        async function saveScore(name, newScore) {
+            const cleanName = String(name || '').trim();
+            const numericScore = Math.max(0, Number(newScore) || 0);
+            if (!cleanName) return false;
+
+            const localList = readLocalRank();
+            const localExisting = localList.find(item => item.name === cleanName);
+            const prevLocalBest = localExisting ? Number(localExisting.score) || 0 : 0;
+            let improved = numericScore > prevLocalBest;
+
+            if (localExisting) {
+                if (improved) localExisting.score = numericScore;
+            } else {
+                localList.push({ name: cleanName, score: numericScore });
+                improved = numericScore > 0;
+            }
+            localList.sort((a, b) => b.score - a.score);
+            writeLocalRank(localList);
+
+            if (!hasCloudConfig()) return improved;
+
+            const headers = {
+                apikey: SUPABASE_ANON_KEY.trim(),
+                Authorization: `Bearer ${SUPABASE_ANON_KEY.trim()}`
+            };
+
+            try {
+                const queryUrl = `${SUPABASE_URL}/rest/v1/leaderboard?name=eq.${encodeURIComponent(cleanName)}&select=score`;
+                const getRes = await fetch(queryUrl, { headers });
+                if (!getRes.ok) throw new Error(`GET ${getRes.status}`);
+                const existingRows = await getRes.json();
+                const prevCloudBest = existingRows.length > 0 ? Number(existingRows[0].score) || 0 : 0;
+
+                if (existingRows.length === 0) {
+                    if (numericScore > 0) {
+                        const insRes = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard`, {
+                            method: 'POST',
+                            headers: {
+                                ...headers,
+                                'Content-Type': 'application/json',
+                                Prefer: 'return=minimal'
+                            },
+                            body: JSON.stringify({
+                                name: cleanName,
+                                score: numericScore,
+                                updated_at: new Date().toISOString()
+                            })
+                        });
+                        if (!insRes.ok) throw new Error(`POST ${insRes.status}`);
+                        return true;
+                    }
+                    return false;
+                }
+
+                if (numericScore > prevCloudBest) {
+                    const patchUrl = `${SUPABASE_URL}/rest/v1/leaderboard?name=eq.${encodeURIComponent(cleanName)}`;
+                    const patchRes = await fetch(patchUrl, {
+                        method: 'PATCH',
+                        headers: {
+                            ...headers,
+                            'Content-Type': 'application/json',
+                            Prefer: 'return=minimal'
+                        },
+                        body: JSON.stringify({
+                            score: numericScore,
+                            updated_at: new Date().toISOString()
+                        })
+                    });
+                    if (!patchRes.ok) throw new Error(`PATCH ${patchRes.status}`);
+                    return true;
+                }
+
+                return false;
+            } catch {
+                return improved;
+            }
+        }
+
+        async function renderLeaderboard() {
+            const container = document.getElementById('rank-list');
+            container.innerHTML = '<div style="color:#8b949e; padding:22px;">正在同步全员榜单...</div>';
+            const list = await fetchLeaderboard();
+            if (!list || list.length === 0) {
+                container.innerHTML = '<div style="color:#8b949e; padding:22px;">暂无成绩，快来抢占榜首！</div>';
+                return;
+            }
+            container.innerHTML = list.map((item, index) => `
     <div class="rank-item">
       <span>#${index + 1} ${escapeHtml(item.name)}</span>
       <span>${item.score} m</span>
     </div>
   `).join('');
-}
+        }
 
-async function renderTvLeaderboard() {
-  const board = document.getElementById('tv-rank-list');
-  const statusEl = document.getElementById('tv-sync-status');
-  const list = await fetchLeaderboard();
-  const nowStr = new Date().toLocaleTimeString('zh-CN', { hour12: false });
-  statusEl.innerText = hasCloudConfig() ? `云端同步 · ${nowStr}` : `本地缓存 · ${nowStr}`;
+        async function renderTvLeaderboard() {
+            const board = document.getElementById('tv-rank-list');
+            const statusEl = document.getElementById('tv-sync-status');
+            const list = await fetchLeaderboard();
+            const nowStr = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+            statusEl.innerText = hasCloudConfig() ? `云端同步 · ${nowStr}` : `本地缓存 · ${nowStr}`;
 
-  if (!list || list.length === 0) {
-    board.innerHTML = '<div style="color:#8b949e; padding:18px;">暂无成绩，等待首位挑战者诞生！</div>';
-    return;
-  }
-  board.innerHTML = list.slice(0, 20).map((item, idx) => `
+            if (!list || list.length === 0) {
+                board.innerHTML = '<div style="color:#8b949e; padding:18px;">暂无成绩，等待首位挑战者诞生！</div>';
+                return;
+            }
+            board.innerHTML = list.slice(0, 20).map((item, idx) => `
     <div class="tv-row">
       <span>#${idx + 1} ${escapeHtml(item.name)}</span>
       <span class="tv-score">${item.score} m</span>
     </div>
   `).join('');
-}
+        }
 
-const SoundFX = (() => {
-  let ctx = null;
-  let muted = false;
+        const SoundFX = (() => {
+            let ctx = null;
+            let muted = false;
 
-  function ensureCtx() {
-    if (muted) return null;
-    if (!ctx) {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (AudioContext) ctx = new AudioContext();
-    }
-    if (ctx && ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
-    }
-    return ctx;
-  }
+            function ensureCtx() {
+                if (muted) return null;
+                if (!ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) ctx = new AudioContext();
+                }
+                if (ctx && ctx.state === 'suspended') {
+                    ctx.resume().catch(() => { });
+                }
+                return ctx;
+            }
 
-  function playTone(freq, duration, type = 'sine', gainVal = 0.12, delay = 0, endFreq = null) {
-    try {
-      const c = ensureCtx();
-      if (!c) return;
-      const now = c.currentTime + delay;
-      const osc = c.createOscillator();
-      const gain = c.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, now);
-      if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
+            function playTone(freq, duration, type = 'sine', gainVal = 0.12, delay = 0, endFreq = null) {
+                try {
+                    const c = ensureCtx();
+                    if (!c) return;
+                    const now = c.currentTime + delay;
+                    const osc = c.createOscillator();
+                    const gain = c.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, now);
+                    if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
 
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(gainVal, now + 0.012);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+                    gain.gain.setValueAtTime(0.0001, now);
+                    gain.gain.linearRampToValueAtTime(gainVal, now + 0.012);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
-      osc.connect(gain);
-      gain.connect(c.destination);
-      osc.start(now);
-      osc.stop(now + duration + 0.02);
-    } catch {}
-  }
+                    osc.connect(gain);
+                    gain.connect(c.destination);
+                    osc.start(now);
+                    osc.stop(now + duration + 0.02);
+                } catch { }
+            }
 
-  return {
-    jump(lane) {
-      const base = 360 + lane * 65;
-      playTone(base, 0.09, 'triangle', 0.11, 0, base * 1.35);
-    },
-    warn() {
-      playTone(740, 0.07, 'square', 0.04, 0);
-    },
-    milestone() {
-      playTone(523.25, 0.12, 'triangle', 0.13, 0);
-      playTone(659.25, 0.12, 'triangle', 0.13, 0.09);
-      playTone(783.99, 0.22, 'triangle', 0.14, 0.18);
-    },
-    hit() {
-      playTone(210, 0.24, 'sawtooth', 0.13, 0, 75);
-    },
-    revive() {
-      playTone(440, 0.1, 'sine', 0.12, 0, 660);
-      playTone(660, 0.16, 'sine', 0.12, 0.09, 880);
-    },
-    setMuted(v) { muted = v; },
-    isMuted() { return muted; }
-  };
-})();
+            return {
+                jump(lane) {
+                    const base = 360 + lane * 65;
+                    playTone(base, 0.09, 'triangle', 0.11, 0, base * 1.35);
+                },
+                warn() {
+                    playTone(740, 0.07, 'square', 0.04, 0);
+                },
+                milestone() {
+                    playTone(523.25, 0.12, 'triangle', 0.13, 0);
+                    playTone(659.25, 0.12, 'triangle', 0.13, 0.09);
+                    playTone(783.99, 0.22, 'triangle', 0.14, 0.18);
+                },
+                hit() {
+                    playTone(210, 0.24, 'sawtooth', 0.13, 0, 75);
+                },
+                revive() {
+                    playTone(440, 0.1, 'sine', 0.12, 0, 660);
+                    playTone(660, 0.16, 'sine', 0.12, 0.09, 880);
+                },
+                setMuted(v) { muted = v; },
+                isMuted() { return muted; }
+            };
+        })();
 
-function toggleMute() {
-  const next = !SoundFX.isMuted();
-  SoundFX.setMuted(next);
-  document.getElementById('sound-btn').innerText = next ? '🔇 已静音' : '🔊 音效开';
-}
+        function toggleMute() {
+            const next = !SoundFX.isMuted();
+            SoundFX.setMuted(next);
+            document.getElementById('sound-btn').innerText = next ? '🔇 已静音' : '🔊 音效开';
+        }
 
-const MILESTONES = [
-  { height: 100, title: '🔥 100m 星火初燃 · 青年启航' },
-  { height: 300, title: '⚡ 300m 青春逐梦 · 双轨进阶' },
-  { height: 600, title: '💻 600m 极客攻坚 · 锋芒毕露' },
-  { height: 1000, title: '🚩 1000m 迈向新长征 · 奋楫前行' }
-];
+        const MILESTONES = [
+            { height: 100, title: '🔥 100m 星火初燃 · 青年启航' },
+            { height: 300, title: '⚡ 300m 青春逐梦 · 双轨进阶' },
+            { height: 600, title: '💻 600m 极客攻坚 · 锋芒毕露' },
+            { height: 1000, title: '🚩 1000m 迈向新长征 · 奋楫前行' }
+        ];
 
-function getSpeedMultiplier(currentScore) {
-  const progress = 1 - Math.exp(-Math.max(0, currentScore) / 650);
-  return 0.82 + progress * 1.1;
-}
+        function getSpeedMultiplier(currentScore) {
+            const progress = 1 - Math.exp(-Math.max(0, currentScore) / 650);
+            return 0.82 + progress * 1.1;
+        }
 
-function getSpawnInterval(currentScore) {
-  const progress = 1 - Math.exp(-Math.max(0, currentScore) / 550);
-  return Math.round(74 - progress * 48);
-}
+        function getSpawnInterval(currentScore) {
+            const progress = 1 - Math.exp(-Math.max(0, currentScore) / 550);
+            return Math.round(74 - progress * 48);
+        }
 
-function getWarnDuration(currentScore) {
-  const progress = 1 - Math.exp(-Math.max(0, currentScore) / 600);
-  return Math.round(52 - progress * 24);
-}
+        function getWarnDuration(currentScore) {
+            const progress = 1 - Math.exp(-Math.max(0, currentScore) / 600);
+            return Math.round(52 - progress * 24);
+        }
 
-const QUIZ_BANK = [
-  {
-    q: "2026年是中国工农红军长征胜利多少周年？",
-    opts: ["70周年", "80周年", "90周年", "100周年"],
-    ans: 2,
-    tip: "2026年10月22日，纪念中国工农红军长征胜利90周年大会在北京隆重举行。"
-  },
-  {
-    q: "1936年10月，红军三大主力胜利会师宣告长征结束，主会师地包括？",
-    opts: ["甘肃会宁与将台堡", "瑞金与遵义", "延安与西柏坡", "瓦窑堡与洛川"],
-    ans: 0,
-    tip: "1936年10月，红一、红四方面军在甘肃会宁会师，红二方面军随后在将台堡（今属宁夏西吉）与红一方面军会师，三大主力胜利会合宣告长征结束。"
-  },
-  {
-    q: "1935年1月召开的哪次会议，在危急关头挽救了党、红军和中国革命？",
-    opts: ["八七会议", "古田会议", "遵义会议", "瓦窑堡会议"],
-    ans: 2,
-    tip: "遵义会议开始确立以毛泽东同志为主要代表的马克思主义正确路线在中共中央的领导地位，事实上确立了毛泽东同志在党中央和红军的领导地位。"
-  },
-  {
-    q: "在纪念中国工农红军长征胜利90周年大会精神指引下，新时代青年要？",
-    opts: ["弘扬伟大长征精神，走好新的长征路", "只做原地踏步的旁观者", "忽视绿色低碳与科技创新", "放弃协同攻关与奋斗"],
-    ans: 0,
-    tip: "2026年10月22日纪念长征胜利90周年大会在京举行，号召弘扬伟大长征精神，在新的长征路上走好新的长征路、奋力创造新的辉煌。"
-  },
-  {
-    q: "红军长征途中“飞夺泸定桥”最集中体现了？",
-    opts: ["不畏艰险、英勇顽强的革命气概", "闭门造车的保守作风", "消极等待的观望态度", "单打独斗的个人主义"],
-    ans: 0,
-    tip: "飞夺泸定桥展现了红军官兵坚定信念、不怕牺牲、勇往直前的长征精神。"
-  },
-  {
-    q: "中国共产主义青年团成立于哪一年？",
-    opts: ["1919年", "1921年", "1922年", "1949年"],
-    ans: 2,
-    tip: "1922年5月，中国社会主义青年团第一次全国代表大会召开。"
-  },
-  {
-    q: "五四运动爆发于哪一年？",
-    opts: ["1911年", "1919年", "1921年", "1927年"],
-    ans: 1,
-    tip: "1919年5月4日，五四运动爆发，展现了反帝反封建的爱国精神。"
-  },
-  {
-    q: "我国“双碳”目标中，提出力争在2030年前实现的是？",
-    opts: ["碳达峰", "碳中和", "零能耗", "全绿电"],
-    ans: 0,
-    tip: "我国力争2030年前实现碳达峰、2060年前实现碳中和。"
-  },
-  {
-    q: "在绿色物流与路径调度中，降低空驶率和能耗最直接的作用是？",
-    opts: ["减少碳排放", "增加车辆自重", "延长配送时间", "提高空载率"],
-    ans: 0,
-    tip: "优化路线与能耗模型有助于减少燃油与电力消耗，从而降低碳排放。"
-  },
-  {
-    q: "二进制数 1010 转换为十进制是多少？",
-    opts: ["8", "10", "12", "14"],
-    ans: 1,
-    tip: "8 + 2 = 10。"
-  },
-  {
-    q: "HTTP 状态码 404 通常表示什么？",
-    opts: ["服务器内部错误", "未找到请求资源", "请求超时", "无访问权限"],
-    ans: 1,
-    tip: "404 Not Found 表示请求的资源在服务器上不存在。"
-  },
-  {
-    q: "在 Git 中，将本地提交推送到远程分支的命令是？",
-    opts: ["git pull", "git commit", "git push", "git stash"],
-    ans: 2,
-    tip: "git push 用于将本地分支的更新推送到远程仓库。"
-  },
-  {
-    q: "以下哪种数据结构遵循“先进先出（FIFO）”原则？",
-    opts: ["栈（Stack）", "队列（Queue）", "二叉树", "哈希表"],
-    ans: 1,
-    tip: "队列先进先出，栈后进先出（LIFO）。"
-  },
-  {
-    q: "在图论与路径规划中，常用于求解单源最短路径的经典算法是？",
-    opts: ["Dijkstra 算法", "冒泡排序", "二分查找", "深度优先遍历"],
-    ans: 0,
-    tip: "Dijkstra 算法常用于计算非负权图中起点到各点的最短路径。"
-  },
-  {
-    q: "在组合优化问题中，邻域搜索与强化学习结合的主要目的是？",
-    opts: ["提升搜索效率与解的质量", "完全放弃启发信息", "把所有解空间穷举一遍", "降低内存占用为0"],
-    ans: 0,
-    tip: "融合学习机制与邻域搜索有助于平衡全局探索与局部开发。"
-  },
-  {
-    q: "并行搜索中多子群/多岛屿协同探索的主要优势之一是？",
-    opts: ["增强多样性并加快收敛", "必然导致死锁", "只能串行执行", "无法交换信息"],
-    ans: 0,
-    tip: "多子群并行协同可拓展搜索范围，提高整体寻优稳定性与效率。"
-  }
-];
+        const QUIZ_BANK = [
+            {
+                q: "2026年是中国工农红军长征胜利多少周年？",
+                opts: ["70周年", "80周年", "90周年", "100周年"],
+                ans: 2,
+                tip: "2026年10月22日，纪念中国工农红军长征胜利90周年大会在北京隆重举行。"
+            },
+            {
+                q: "1936年10月，红军三大主力胜利会师宣告长征结束，主会师地包括？",
+                opts: ["甘肃会宁与将台堡", "瑞金与遵义", "延安与西柏坡", "瓦窑堡与洛川"],
+                ans: 0,
+                tip: "1936年10月，红一、红四方面军在甘肃会宁会师，红二方面军随后在将台堡（今属宁夏西吉）与红一方面军会师，三大主力胜利会合宣告长征结束。"
+            },
+            {
+                q: "1935年1月召开的哪次会议，在危急关头挽救了党、红军和中国革命？",
+                opts: ["八七会议", "古田会议", "遵义会议", "瓦窑堡会议"],
+                ans: 2,
+                tip: "遵义会议开始确立以毛泽东同志为主要代表的马克思主义正确路线在中共中央的领导地位，事实上确立了毛泽东同志在党中央和红军的领导地位。"
+            },
+            {
+                q: "在纪念中国工农红军长征胜利90周年大会精神指引下，新时代青年要？",
+                opts: ["弘扬伟大长征精神，走好新的长征路", "只做原地踏步的旁观者", "忽视绿色低碳与科技创新", "放弃协同攻关与奋斗"],
+                ans: 0,
+                tip: "2026年10月22日纪念长征胜利90周年大会在京举行，号召弘扬伟大长征精神，在新的长征路上走好新的长征路、奋力创造新的辉煌。"
+            },
+            {
+                q: "红军长征途中“飞夺泸定桥”最集中体现了？",
+                opts: ["不畏艰险、英勇顽强的革命气概", "闭门造车的保守作风", "消极等待的观望态度", "单打独斗的个人主义"],
+                ans: 0,
+                tip: "飞夺泸定桥展现了红军官兵坚定信念、不怕牺牲、勇往直前的长征精神。"
+            },
+            {
+                q: "中国共产主义青年团成立于哪一年？",
+                opts: ["1919年", "1921年", "1922年", "1949年"],
+                ans: 2,
+                tip: "1922年5月，中国社会主义青年团第一次全国代表大会召开。"
+            },
+            {
+                q: "五四运动爆发于哪一年？",
+                opts: ["1911年", "1919年", "1921年", "1927年"],
+                ans: 1,
+                tip: "1919年5月4日，五四运动爆发，展现了反帝反封建的爱国精神。"
+            },
+            {
+                q: "我国“双碳”目标中，提出力争在2030年前实现的是？",
+                opts: ["碳达峰", "碳中和", "零能耗", "全绿电"],
+                ans: 0,
+                tip: "我国力争2030年前实现碳达峰、2060年前实现碳中和。"
+            },
+            {
+                q: "在绿色物流与路径调度中，降低空驶率和能耗最直接的作用是？",
+                opts: ["减少碳排放", "增加车辆自重", "延长配送时间", "提高空载率"],
+                ans: 0,
+                tip: "优化路线与能耗模型有助于减少燃油与电力消耗，从而降低碳排放。"
+            },
+            {
+                q: "二进制数 1010 转换为十进制是多少？",
+                opts: ["8", "10", "12", "14"],
+                ans: 1,
+                tip: "8 + 2 = 10。"
+            },
+            {
+                q: "HTTP 状态码 404 通常表示什么？",
+                opts: ["服务器内部错误", "未找到请求资源", "请求超时", "无访问权限"],
+                ans: 1,
+                tip: "404 Not Found 表示请求的资源在服务器上不存在。"
+            },
+            {
+                q: "在 Git 中，将本地提交推送到远程分支的命令是？",
+                opts: ["git pull", "git commit", "git push", "git stash"],
+                ans: 2,
+                tip: "git push 用于将本地分支的更新推送到远程仓库。"
+            },
+            {
+                q: "以下哪种数据结构遵循“先进先出（FIFO）”原则？",
+                opts: ["栈（Stack）", "队列（Queue）", "二叉树", "哈希表"],
+                ans: 1,
+                tip: "队列先进先出，栈后进先出（LIFO）。"
+            },
+            {
+                q: "在图论与路径规划中，常用于求解单源最短路径的经典算法是？",
+                opts: ["Dijkstra 算法", "冒泡排序", "二分查找", "深度优先遍历"],
+                ans: 0,
+                tip: "Dijkstra 算法常用于计算非负权图中起点到各点的最短路径。"
+            },
+            {
+                q: "在组合优化问题中，邻域搜索与强化学习结合的主要目的是？",
+                opts: ["提升搜索效率与解的质量", "完全放弃启发信息", "把所有解空间穷举一遍", "降低内存占用为0"],
+                ans: 0,
+                tip: "融合学习机制与邻域搜索有助于平衡全局探索与局部开发。"
+            },
+            {
+                q: "并行搜索中多子群/多岛屿协同探索的主要优势之一是？",
+                opts: ["增强多样性并加快收敛", "必然导致死锁", "只能串行执行", "无法交换信息"],
+                ans: 0,
+                tip: "多子群并行协同可拓展搜索范围，提高整体寻优稳定性与效率。"
+            }
+        ];
 
-const OBSTACLE_TYPES = [
-  { label: '404', color: '#da3633', speedMult: 1.0, width: 56, wobble: 0 },
-  { label: 'BUG', color: '#d97706', speedMult: 1.15, width: 58, wobble: 1.6 },
-  { label: 'OOM', color: '#be123c', speedMult: 1.32, width: 56, wobble: 0 },
-  { label: 'LOOP', color: '#9333ea', speedMult: 0.94, width: 72, wobble: 0 }
-];
+        const OBSTACLE_TYPES = [
+            { label: '404', color: '#da3633', speedMult: 1.0, width: 56, wobble: 0 },
+            { label: 'BUG', color: '#d97706', speedMult: 1.15, width: 58, wobble: 1.6 },
+            { label: 'OOM', color: '#be123c', speedMult: 1.32, width: 56, wobble: 0 },
+            { label: 'LOOP', color: '#9333ea', speedMult: 0.94, width: 72, wobble: 0 }
+        ];
 
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const LANES = 3;
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const LANES = 3;
 
-let W = 360, H = 640;
-let laneWidth = W / LANES;
-let player = {
-  lane: 1,
-  x: 180,
-  targetX: 180,
-  y: 495,
-  scale: 1,
-  lastJumpAt: 0,
-  invulnUntil: 0
-};
+        let W = 360, H = 640;
+        let laneWidth = W / LANES;
+        let player = {
+            lane: 1,
+            x: 180,
+            targetX: 180,
+            y: 495,
+            scale: 1,
+            lastJumpAt: 0,
+            invulnUntil: 0
+        };
 
-let score = 0;
-let username = '匿名极客';
-let gameState = 'START';
-let obstacles = [];
-let warnings = [];
-let particles = [];
-let hasRevived = false;
-let pendingQuizCorrect = false;
-let reachedMilestones = new Set();
-let usedQuizIndices = new Set();
-let spawnTimer = 0;
-let cameraOffset = 0;
-let bannerTimeout = null;
-let lastFrameTime = null;
+        let score = 0;
+        let username = '匿名极客';
+        let gameState = 'START';
+        let obstacles = [];
+        let warnings = [];
+        let particles = [];
+        let hasRevived = false;
+        let pendingQuizCorrect = false;
+        let reachedMilestones = new Set();
+        let usedQuizIndices = new Set();
+        let spawnTimer = 0;
+        let cameraOffset = 0;
+        let bannerTimeout = null;
+        let lastFrameTime = null;
 
-function getLaneX(lane) {
-  return laneWidth * lane + laneWidth / 2;
-}
+        function getLaneX(lane) {
+            return laneWidth * lane + laneWidth / 2;
+        }
 
-function resize() {
-  if (IS_TV_MODE) return;
-  const parent = canvas.parentElement;
-  const rect = parent ? parent.getBoundingClientRect() : { width: 360, height: 640 };
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  W = Math.max(240, rect.width || window.innerWidth || 360);
-  H = Math.max(400, rect.height || window.innerHeight || 640);
-  canvas.width = Math.floor(W * dpr);
-  canvas.height = Math.floor(H * dpr);
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  laneWidth = W / LANES;
-  player.y = H - 145;
-  player.targetX = getLaneX(player.lane);
-  if (gameState === 'START') {
-    player.x = player.targetX;
-  }
-}
-window.addEventListener('resize', resize);
+        function clearActiveHazards() {
+            obstacles = [];
+            warnings = [];
+        }
 
-function startGame() {
-  try {
-    setDiag('');
-    const inputEl = document.getElementById('username');
-    const rawVal = inputEl && typeof inputEl.value === 'string' ? inputEl.value : '';
-    const inputName = rawVal.trim();
-    if (!inputName) {
-      setDiag('请先输入姓名或学号后四位！');
-      alert('请先输入姓名或学号后四位，方便上榜排名哦！');
-      return;
-    }
-    if (inputEl && typeof inputEl.blur === 'function') {
-      inputEl.blur();
-    }
-    username = inputName;
-    const tagEl = document.getElementById('player-tag');
-    if (tagEl) tagEl.innerText = username;
+        function resize() {
+            if (IS_TV_MODE) return;
+            const parent = canvas.parentElement;
+            const rect = parent ? parent.getBoundingClientRect() : { width: 360, height: 640 };
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            W = Math.max(240, rect.width || window.innerWidth || 360);
+            H = Math.max(400, rect.height || window.innerHeight || 640);
+            canvas.width = Math.floor(W * dpr);
+            canvas.height = Math.floor(H * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            laneWidth = W / LANES;
+            player.y = H - 145;
+            player.targetX = getLaneX(player.lane);
+            if (gameState === 'START') {
+                player.x = player.targetX;
+            }
+        }
+        window.addEventListener('resize', resize);
 
-    const startScreen = document.getElementById('start-screen');
-    const overScreen = document.getElementById('over-screen');
-    if (startScreen) {
-      startScreen.classList.add('hidden');
-      startScreen.style.display = 'none';
-    }
-    if (overScreen) {
-      overScreen.classList.add('hidden');
-      overScreen.style.display = 'none';
-    }
-    resetGame();
-  } catch (err) {
-    setDiag('启动失败：' + (err && err.message ? err.message : String(err)));
-  }
-}
+        function startGame() {
+            try {
+                setDiag('');
+                const inputEl = document.getElementById('username');
+                const rawVal = inputEl && typeof inputEl.value === 'string' ? inputEl.value : '';
+                const inputName = rawVal.trim();
+                if (!inputName) {
+                    setDiag('请先输入姓名或学号后四位！');
+                    alert('请先输入姓名或学号后四位，方便上榜排名哦！');
+                    return;
+                }
+                if (inputEl && typeof inputEl.blur === 'function') {
+                    inputEl.blur();
+                }
+                username = inputName;
+                const tagEl = document.getElementById('player-tag');
+                if (tagEl) tagEl.innerText = username;
 
-function resetGame() {
-  resize();
-  score = 0;
-  hasRevived = false;
-  pendingQuizCorrect = false;
-  reachedMilestones.clear();
-  usedQuizIndices.clear();
-  player.lane = 1;
-  player.x = getLaneX(1);
-  player.targetX = player.x;
-  player.y = H - 145;
-  player.scale = 1;
-  player.lastJumpAt = 0;
-  player.invulnUntil = 0;
-  obstacles = [];
-  warnings = [];
-  particles = [];
-  spawnTimer = 28;
-  cameraOffset = 0;
-  lastFrameTime = performance.now();
-  gameState = 'PLAYING';
-  updateScoreUI();
-}
+                const startScreen = document.getElementById('start-screen');
+                const overScreen = document.getElementById('over-screen');
+                if (startScreen) {
+                    startScreen.classList.add('hidden');
+                    startScreen.style.display = 'none';
+                }
+                if (overScreen) {
+                    overScreen.classList.add('hidden');
+                    overScreen.style.display = 'none';
+                }
+                resetGame();
+            } catch (err) {
+                setDiag('启动失败：' + (err && err.message ? err.message : String(err)));
+            }
+        }
 
-function restartGame() {
-  const overScreen = document.getElementById('over-screen');
-  if (overScreen) {
-    overScreen.classList.add('hidden');
-    overScreen.style.display = 'none';
-  }
-  resetGame();
-}
+        function resetGame() {
+            resize();
+            score = 0;
+            hasRevived = false;
+            pendingQuizCorrect = false;
+            reachedMilestones.clear();
+            usedQuizIndices.clear();
+            player.lane = 1;
+            player.x = getLaneX(1);
+            player.targetX = player.x;
+            player.y = H - 145;
+            player.scale = 1;
+            player.lastJumpAt = 0;
+            player.invulnUntil = 0;
+            clearActiveHazards();
+            particles = [];
+            spawnTimer = 28;
+            cameraOffset = 0;
+            lastFrameTime = performance.now();
+            gameState = 'PLAYING';
+            updateScoreUI();
+        }
 
-function backToStart() {
-  const overScreen = document.getElementById('over-screen');
-  const startScreen = document.getElementById('start-screen');
-  if (overScreen) {
-    overScreen.classList.add('hidden');
-    overScreen.style.display = 'none';
-  }
-  if (startScreen) {
-    startScreen.classList.remove('hidden');
-    startScreen.style.display = '';
-  }
-  gameState = 'START';
-}
+        function restartGame() {
+            const overScreen = document.getElementById('over-screen');
+            if (overScreen) {
+                overScreen.classList.add('hidden');
+                overScreen.style.display = 'none';
+            }
+            resetGame();
+        }
 
-canvas.addEventListener('pointerdown', (e) => {
-  if (gameState !== 'PLAYING') return;
-  e.preventDefault();
-  const now = performance.now();
-  if (now - player.lastJumpAt < 90) return;
+        function backToStart() {
+            const overScreen = document.getElementById('over-screen');
+            const startScreen = document.getElementById('start-screen');
+            if (overScreen) {
+                overScreen.classList.add('hidden');
+                overScreen.style.display = 'none';
+            }
+            if (startScreen) {
+                startScreen.classList.remove('hidden');
+                startScreen.style.display = '';
+            }
+            clearActiveHazards();
+            gameState = 'START';
+        }
 
-  const rect = canvas.getBoundingClientRect();
-  const clickX = e.clientX - rect.left;
+        canvas.addEventListener('pointerdown', (e) => {
+            if (gameState !== 'PLAYING') return;
+            e.preventDefault();
+            const now = performance.now();
+            if (now - player.lastJumpAt < 90) return;
 
-  if (clickX < W / 2) {
-    player.lane = Math.max(0, player.lane - 1);
-  } else {
-    player.lane = Math.min(LANES - 1, player.lane + 1);
-  }
-  player.targetX = getLaneX(player.lane);
-  player.lastJumpAt = now;
-  player.scale = 1.24;
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
 
-  score += 10;
-  cameraOffset = 16;
-  updateScoreUI();
-  checkMilestones();
-  SoundFX.jump(player.lane);
-  spawnParticles(player.x, player.y + 18, '#ff5555', 9);
-}, { passive: false });
+            if (clickX < W / 2) {
+                player.lane = Math.max(0, player.lane - 1);
+            } else {
+                player.lane = Math.min(LANES - 1, player.lane + 1);
+            }
+            player.targetX = getLaneX(player.lane);
+            player.lastJumpAt = now;
+            player.scale = 1.24;
 
-function checkMilestones() {
-  for (const m of MILESTONES) {
-    if (score >= m.height && !reachedMilestones.has(m.height)) {
-      reachedMilestones.add(m.height);
-      showMilestoneBanner(m.title);
-      SoundFX.milestone();
-      spawnParticles(player.x, player.y, '#ffd700', 22);
-    }
-  }
-}
+            score += 10;
+            cameraOffset = 16;
+            updateScoreUI();
+            checkMilestones();
+            SoundFX.jump(player.lane);
+            spawnParticles(player.x, player.y + 18, '#ff5555', 9);
+        }, { passive: false });
 
-function showMilestoneBanner(text) {
-  const el = document.getElementById('milestone-banner');
-  el.innerText = text;
-  el.classList.add('show');
-  clearTimeout(bannerTimeout);
-  bannerTimeout = setTimeout(() => {
-    el.classList.remove('show');
-  }, 1900);
-}
+        function checkMilestones() {
+            for (const m of MILESTONES) {
+                if (score >= m.height && !reachedMilestones.has(m.height)) {
+                    reachedMilestones.add(m.height);
+                    showMilestoneBanner(m.title);
+                    SoundFX.milestone();
+                    spawnParticles(player.x, player.y, '#ffd700', 22);
+                }
+            }
+        }
 
-function spawnParticles(x, y, color, count) {
-  for (let i = 0; i < count; i++) {
-    particles.push({
-      x,
-      y,
-      vx: (Math.random() - 0.5) * 7,
-      vy: Math.random() * 4.5 + 1.2,
-      life: 1,
-      color
-    });
-  }
-}
+        function showMilestoneBanner(text) {
+            const el = document.getElementById('milestone-banner');
+            el.innerText = text;
+            el.classList.add('show');
+            clearTimeout(bannerTimeout);
+            bannerTimeout = setTimeout(() => {
+                el.classList.remove('show');
+            }, 1900);
+        }
 
-function updateScoreUI() {
-  document.getElementById('score-display').innerText = score;
-}
+        function spawnParticles(x, y, color, count) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x,
+                    y,
+                    vx: (Math.random() - 0.5) * 7,
+                    vy: Math.random() * 4.5 + 1.2,
+                    life: 1,
+                    color
+                });
+            }
+        }
 
-function scheduleObstacles() {
-  const allLanes = [0, 1, 2];
-  const primaryLane = Math.floor(Math.random() * LANES);
-  const lanesToWarn = [primaryLane];
+        function updateScoreUI() {
+            document.getElementById('score-display').innerText = score;
+        }
 
-  if (score >= 300 && Math.random() < 0.34) {
-    const others = allLanes.filter(l => l !== primaryLane);
-    const secondLane = others[Math.floor(Math.random() * others.length)];
-    lanesToWarn.push(secondLane);
-  }
+        function scheduleObstacles() {
+            const allLanes = [0, 1, 2];
+            const primaryLane = Math.floor(Math.random() * LANES);
+            const lanesToWarn = [primaryLane];
 
-  const warnDuration = getWarnDuration(score);
-  lanesToWarn.forEach((lane) => {
-    warnings.push({
-      lane,
-      timer: warnDuration,
-      maxTimer: warnDuration
-    });
-  });
-  SoundFX.warn();
-}
+            if (score >= 300 && Math.random() < 0.34) {
+                const others = allLanes.filter(l => l !== primaryLane);
+                const secondLane = others[Math.floor(Math.random() * others.length)];
+                lanesToWarn.push(secondLane);
+            }
 
-function pickQuizIndex() {
-  if (usedQuizIndices.size >= QUIZ_BANK.length) {
-    usedQuizIndices.clear();
-  }
-  const available = [];
-  for (let i = 0; i < QUIZ_BANK.length; i++) {
-    if (!usedQuizIndices.has(i)) available.push(i);
-  }
-  const chosen = available[Math.floor(Math.random() * available.length)];
-  usedQuizIndices.add(chosen);
-  return chosen;
-}
+            const warnDuration = getWarnDuration(score);
+            lanesToWarn.forEach((lane) => {
+                warnings.push({
+                    lane,
+                    timer: warnDuration,
+                    maxTimer: warnDuration
+                });
+            });
+            SoundFX.warn();
+        }
 
-function triggerQuiz() {
-  gameState = 'QUIZ';
-  pendingQuizCorrect = false;
+        function pickQuizIndex() {
+            if (usedQuizIndices.size >= QUIZ_BANK.length) {
+                usedQuizIndices.clear();
+            }
+            const available = [];
+            for (let i = 0; i < QUIZ_BANK.length; i++) {
+                if (!usedQuizIndices.has(i)) available.push(i);
+            }
+            const chosen = available[Math.floor(Math.random() * available.length)];
+            usedQuizIndices.add(chosen);
+            return chosen;
+        }
 
-  const qIdx = pickQuizIndex();
-  const qObj = QUIZ_BANK[qIdx];
-  const explainEl = document.getElementById('quiz-explain');
-  const nextBtn = document.getElementById('quiz-next-btn');
+        function triggerQuiz() {
+            gameState = 'QUIZ';
+            clearActiveHazards();
+            pendingQuizCorrect = false;
 
-  explainEl.classList.remove('show');
-  explainEl.innerHTML = '';
-  nextBtn.classList.add('hidden');
-  nextBtn.disabled = false;
+            const qIdx = pickQuizIndex();
+            const qObj = QUIZ_BANK[qIdx];
+            const explainEl = document.getElementById('quiz-explain');
+            const nextBtn = document.getElementById('quiz-next-btn');
 
-  document.getElementById('quiz-question').innerText = qObj.q;
-  const optBox = document.getElementById('quiz-options');
-  optBox.innerHTML = '';
+            explainEl.classList.remove('show');
+            explainEl.innerHTML = '';
+            nextBtn.classList.add('hidden');
+            nextBtn.disabled = false;
 
-  let answered = false;
-  qObj.opts.forEach((opt, idx) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'quiz-opt';
-    btn.innerText = opt;
-    btn.onclick = () => {
-      if (answered) return;
-      answered = true;
+            document.getElementById('quiz-question').innerText = qObj.q;
+            const optBox = document.getElementById('quiz-options');
+            optBox.innerHTML = '';
 
-      const allOpts = optBox.querySelectorAll('.quiz-opt');
-      allOpts.forEach((el, i) => {
-        el.disabled = true;
-        if (i === qObj.ans) el.classList.add('correct');
-        else if (i === idx) el.classList.add('wrong');
-      });
+            let answered = false;
+            qObj.opts.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'quiz-opt';
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    if (answered) return;
+                    answered = true;
 
-      const isRight = idx === qObj.ans;
-      pendingQuizCorrect = isRight;
+                    const allOpts = optBox.querySelectorAll('.quiz-opt');
+                    allOpts.forEach((el, i) => {
+                        el.disabled = true;
+                        if (i === qObj.ans) el.classList.add('correct');
+                        else if (i === idx) el.classList.add('wrong');
+                    });
 
-      explainEl.innerHTML = `
+                    const isRight = idx === qObj.ans;
+                    pendingQuizCorrect = isRight;
+
+                    explainEl.innerHTML = `
         <div style="font-weight:700; color:${isRight ? '#3fb950' : '#f85149'}; margin-bottom:4px;">
           ${isRight ? '✅ 回答正确！可复活并 +100m' : '❌ 回答有误！正确答案：' + qObj.opts[qObj.ans]}
         </div>
         <div>${escapeHtml(qObj.tip)}</div>
       `;
-      explainEl.classList.add('show');
+                    explainEl.classList.add('show');
 
-      nextBtn.innerText = isRight ? '下一步：复活继续 (+100m)' : '下一步：查看结算与排行';
-      nextBtn.classList.remove('hidden');
-    };
-    optBox.appendChild(btn);
-  });
+                    nextBtn.innerText = isRight ? '下一步：复活继续 (+100m)' : '下一步：查看结算与排行';
+                    nextBtn.classList.remove('hidden');
+                };
+                optBox.appendChild(btn);
+            });
 
-  document.getElementById('quiz-screen').classList.remove('hidden');
-}
-
-function handleQuizNext() {
-  if (gameState !== 'QUIZ') return;
-  document.getElementById('quiz-screen').classList.add('hidden');
-  document.getElementById('quiz-next-btn').classList.add('hidden');
-
-  if (pendingQuizCorrect) {
-    hasRevived = true;
-    score += 100;
-    updateScoreUI();
-    checkMilestones();
-    obstacles = [];
-    warnings = [];
-    player.invulnUntil = performance.now() + 900;
-    lastFrameTime = performance.now();
-    gameState = 'PLAYING';
-    SoundFX.revive();
-  } else {
-    gameOver();
-  }
-}
-
-function gameOver() {
-  gameState = 'OVER';
-  document.getElementById('over-title').innerText = '挑战结束';
-  document.getElementById('final-score').innerText = score;
-  document.getElementById('best-badge').innerText = '';
-  document.getElementById('rank-list').innerHTML = '<div style="color:#8b949e; padding:22px;">正在同步全员榜单...</div>';
-  const overScreen = document.getElementById('over-screen');
-  overScreen.classList.remove('hidden');
-  overScreen.style.display = '';
-
-  saveScore(username, score).then((isNewBest) => {
-    if (gameState === 'OVER' && isNewBest) {
-      document.getElementById('best-badge').innerText = '🎉 刷新个人历史最高纪录！';
-    }
-    return renderLeaderboard();
-  });
-}
-
-function showLeaderboard() {
-  const startScreen = document.getElementById('start-screen');
-  const overScreen = document.getElementById('over-screen');
-  if (startScreen) {
-    startScreen.classList.add('hidden');
-    startScreen.style.display = 'none';
-  }
-  if (overScreen) {
-    overScreen.classList.remove('hidden');
-    overScreen.style.display = '';
-  }
-  document.getElementById('over-title').innerText = '🏆 全员排行榜';
-  document.getElementById('final-score').innerText = '-';
-  document.getElementById('best-badge').innerText = '';
-  renderLeaderboard();
-}
-
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, m => ({
-    '&': '&', '<': '<', '>': '>', '"': '"', "'": '''
-  }[m]));
-}
-
-function drawRoundedRect(x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
-
-function loop(now = performance.now()) {
-  if (IS_TV_MODE) return;
-  if (lastFrameTime === null) lastFrameTime = now;
-  const rawDt = (now - lastFrameTime) / (1000 / 60);
-  lastFrameTime = now;
-  const dt = Math.min(Math.max(rawDt, 0.25), 2.5);
-
-  ctx.clearRect(0, 0, W, H);
-
-  ctx.strokeStyle = '#212a3a';
-  ctx.lineWidth = 2;
-  for (let i = 1; i < LANES; i++) {
-    ctx.beginPath();
-    ctx.moveTo(i * laneWidth, 0);
-    ctx.lineTo(i * laneWidth, H);
-    ctx.stroke();
-  }
-
-  cameraOffset *= Math.pow(0.84, dt);
-  const stepGap = 64;
-  const offset = (score * 5 + cameraOffset) % stepGap;
-  ctx.strokeStyle = 'rgba(88, 166, 255, 0.09)';
-  ctx.lineWidth = 1;
-  for (let y = offset; y < H; y += stepGap) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(W, y);
-    ctx.stroke();
-  }
-
-  if (gameState === 'PLAYING') {
-    const speedMult = getSpeedMultiplier(score);
-    const interval = getSpawnInterval(score);
-    spawnTimer += dt;
-    if (spawnTimer >= interval) {
-      spawnTimer = 0;
-      scheduleObstacles();
-    }
-
-    for (let i = warnings.length - 1; i >= 0; i--) {
-      const w = warnings[i];
-      w.timer -= dt;
-      const wx = getLaneX(w.lane);
-      const pulse = 0.14 + Math.abs(Math.sin(w.timer * 0.28)) * 0.16;
-
-      ctx.fillStyle = `rgba(255, 85, 85, ${pulse})`;
-      ctx.fillRect(w.lane * laneWidth + 3, 0, laneWidth - 6, H);
-
-      ctx.fillStyle = '#ff6b6b';
-      ctx.font = 'bold 20px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('⚠️', wx, 108);
-
-      if (w.timer <= 0) {
-        const spec = OBSTACLE_TYPES[Math.floor(Math.random() * OBSTACLE_TYPES.length)];
-        obstacles.push({
-          lane: w.lane,
-          baseX: wx,
-          x: wx,
-          y: -30,
-          baseSpeed: (5.4 + Math.random() * 1.4) * spec.speedMult,
-          label: spec.label,
-          color: spec.color,
-          width: spec.width,
-          wobble: spec.wobble,
-          phase: Math.random() * Math.PI * 2
-        });
-        warnings.splice(i, 1);
-      }
-    }
-
-    const isInvuln = now < player.invulnUntil;
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-      const obs = obstacles[i];
-      obs.y += obs.baseSpeed * speedMult * dt;
-      obs.phase += 0.12 * dt;
-      if (obs.wobble > 0) {
-        const maxShift = (laneWidth - obs.width) * 0.35;
-        obs.x = obs.baseX + Math.sin(obs.phase) * Math.min(maxShift, obs.wobble * 6);
-      }
-
-      ctx.fillStyle = obs.color;
-      drawRoundedRect(obs.x - obs.width / 2, obs.y - 20, obs.width, 40, 8);
-      ctx.fill();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 13px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(obs.label, obs.x, obs.y + 5);
-
-      if (!isInvuln && obs.lane === player.lane && Math.abs(obs.y - player.y) < 34) {
-        SoundFX.hit();
-        spawnParticles(player.x, player.y, '#ff5555', 18);
-        if (!hasRevived) {
-          triggerQuiz();
-        } else {
-          gameOver();
+            document.getElementById('quiz-screen').classList.remove('hidden');
         }
-        break;
-      }
 
-      if (obs.y > H + 55) obstacles.splice(i, 1);
-    }
-  }
+        function handleQuizNext() {
+            if (gameState !== 'QUIZ') return;
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('quiz-next-btn').classList.add('hidden');
 
-  player.x += (player.targetX - player.x) * (1 - Math.pow(0.62, dt));
-  player.scale += (1 - player.scale) * (1 - Math.pow(0.78, dt));
+            if (pendingQuizCorrect) {
+                hasRevived = true;
+                score += 100;
+                updateScoreUI();
+                checkMilestones();
+                clearActiveHazards();
+                player.invulnUntil = performance.now() + 900;
+                lastFrameTime = performance.now();
+                gameState = 'PLAYING';
+                SoundFX.revive();
+            } else {
+                gameOver();
+            }
+        }
 
-  const blinkSkip = gameState === 'PLAYING' && now < player.invulnUntil && Math.floor(now / 80) % 2 === 0;
-  if (!blinkSkip) {
-    ctx.save();
-    ctx.translate(player.x, player.y);
-    ctx.scale(player.scale, player.scale);
+        function gameOver() {
+            gameState = 'OVER';
+            clearActiveHazards();
+            document.getElementById('over-title').innerText = '挑战结束';
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('best-badge').innerText = '';
+            document.getElementById('rank-list').innerHTML = '<div style="color:#8b949e; padding:22px;">正在同步全员榜单...</div>';
+            const overScreen = document.getElementById('over-screen');
+            overScreen.classList.remove('hidden');
+            overScreen.style.display = '';
 
-    ctx.fillStyle = '#ff5555';
-    ctx.beginPath();
-    ctx.arc(0, 0, 18, 0, Math.PI * 2);
-    ctx.fill();
+            saveScore(username, score).then((isNewBest) => {
+                if (gameState === 'OVER' && isNewBest) {
+                    document.getElementById('best-badge').innerText = '🎉 刷新个人历史最高纪录！';
+                }
+                return renderLeaderboard();
+            });
+        }
 
-    ctx.strokeStyle = 'rgba(255, 215, 0, 0.55)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+        function showLeaderboard() {
+            const startScreen = document.getElementById('start-screen');
+            const overScreen = document.getElementById('over-screen');
+            if (startScreen) {
+                startScreen.classList.add('hidden');
+                startScreen.style.display = 'none';
+            }
+            if (overScreen) {
+                overScreen.classList.remove('hidden');
+                overScreen.style.display = '';
+            }
+            document.getElementById('over-title').innerText = '🏆 全员排行榜';
+            document.getElementById('final-score').innerText = '-';
+            document.getElementById('best-badge').innerText = '';
+            renderLeaderboard();
+        }
 
-    ctx.fillStyle = '#ffd700';
-    ctx.font = '18px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('★', 0, 6);
-    ctx.restore();
-  }
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, m => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[m]));
+        }
+        function drawRoundedRect(x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
 
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.life -= 0.045 * dt;
-    if (p.life <= 0) {
-      particles.splice(i, 1);
-      continue;
-    }
-    ctx.fillStyle = p.color;
-    ctx.globalAlpha = Math.max(0, p.life);
-    ctx.fillRect(p.x - 2.5, p.y - 2.5, 5, 5);
-    ctx.globalAlpha = 1;
-  }
+        function loop(now = performance.now()) {
+            if (IS_TV_MODE) return;
+            if (lastFrameTime === null) lastFrameTime = now;
+            const rawDt = (now - lastFrameTime) / (1000 / 60);
+            lastFrameTime = now;
+            const dt = Math.min(Math.max(rawDt, 0.25), 2.5);
 
-  requestAnimationFrame(loop);
-}
+            ctx.clearRect(0, 0, W, H);
 
-if (IS_TV_MODE) {
-  document.body.classList.add('tv-mode');
-  renderTvLeaderboard();
-  setInterval(renderTvLeaderboard, 8000);
-} else {
-  resize();
-  requestAnimationFrame(loop);
-}
-</script>
+            ctx.strokeStyle = '#212a3a';
+            ctx.lineWidth = 2;
+            for (let i = 1; i < LANES; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * laneWidth, 0);
+                ctx.lineTo(i * laneWidth, H);
+                ctx.stroke();
+            }
+
+            cameraOffset *= Math.pow(0.84, dt);
+            const stepGap = 64;
+            const offset = (score * 5 + cameraOffset) % stepGap;
+            ctx.strokeStyle = 'rgba(88, 166, 255, 0.09)';
+            ctx.lineWidth = 1;
+            for (let y = offset; y < H; y += stepGap) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(W, y);
+                ctx.stroke();
+            }
+
+            if (gameState === 'PLAYING') {
+                const speedMult = getSpeedMultiplier(score);
+                const interval = getSpawnInterval(score);
+                spawnTimer += dt;
+                if (spawnTimer >= interval) {
+                    spawnTimer = 0;
+                    scheduleObstacles();
+                }
+
+                for (let i = warnings.length - 1; i >= 0; i--) {
+                    if (gameState !== 'PLAYING') break;
+                    const w = warnings[i];
+                    w.timer -= dt;
+                    const wx = getLaneX(w.lane);
+                    const pulse = 0.14 + Math.abs(Math.sin(w.timer * 0.28)) * 0.16;
+
+                    ctx.fillStyle = `rgba(255, 85, 85, ${pulse})`;
+                    ctx.fillRect(w.lane * laneWidth + 3, 0, laneWidth - 6, H);
+
+                    ctx.fillStyle = '#ff6b6b';
+                    ctx.font = 'bold 20px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('⚠️', wx, 108);
+
+                    if (w.timer <= 0) {
+                        const spec = OBSTACLE_TYPES[Math.floor(Math.random() * OBSTACLE_TYPES.length)];
+                        obstacles.push({
+                            lane: w.lane,
+                            baseX: wx,
+                            x: wx,
+                            y: -30,
+                            baseSpeed: (5.4 + Math.random() * 1.4) * spec.speedMult,
+                            label: spec.label,
+                            color: spec.color,
+                            width: spec.width,
+                            wobble: spec.wobble,
+                            phase: Math.random() * Math.PI * 2
+                        });
+                        warnings.splice(i, 1);
+                    }
+                }
+
+                const isInvuln = now < player.invulnUntil;
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    if (gameState !== 'PLAYING') break;
+                    const obs = obstacles[i];
+                    obs.y += obs.baseSpeed * speedMult * dt;
+                    obs.phase += 0.12 * dt;
+                    if (obs.wobble > 0) {
+                        const maxShift = (laneWidth - obs.width) * 0.35;
+                        obs.x = obs.baseX + Math.sin(obs.phase) * Math.min(maxShift, obs.wobble * 6);
+                    }
+
+                    ctx.fillStyle = obs.color;
+                    drawRoundedRect(obs.x - obs.width / 2, obs.y - 20, obs.width, 40, 8);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 13px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(obs.label, obs.x, obs.y + 5);
+
+                    if (gameState === 'PLAYING' && !isInvuln && obs.lane === player.lane && Math.abs(obs.y - player.y) < 34) {
+                        SoundFX.hit();
+                        spawnParticles(player.x, player.y, '#ff5555', 18);
+                        if (!hasRevived) {
+                            triggerQuiz();
+                        } else {
+                            gameOver();
+                        }
+                        break;
+                    }
+
+                    if (obs.y > H + 55) obstacles.splice(i, 1);
+                }
+            }
+
+            player.x += (player.targetX - player.x) * (1 - Math.pow(0.62, dt));
+            player.scale += (1 - player.scale) * (1 - Math.pow(0.78, dt));
+
+            const blinkSkip = gameState === 'PLAYING' &&
+                now < player.invulnUntil &&
+                Math.floor(now / 80) % 2 === 0;
+            if (!blinkSkip) {
+                ctx.save();
+                ctx.translate(player.x, player.y);
+                ctx.scale(player.scale, player.scale);
+
+                ctx.fillStyle = '#ff5555';
+                ctx.beginPath();
+                ctx.arc(0, 0, 18, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.55)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffd700';
+                ctx.font = '18px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('★', 0, 6);
+                ctx.restore();
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.life -= 0.045 * dt;
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = Math.max(0, p.life);
+                ctx.fillRect(p.x - 2.5, p.y - 2.5, 5, 5);
+                ctx.globalAlpha = 1;
+            }
+
+            requestAnimationFrame(loop);
+        }
+
+        if (IS_TV_MODE) {
+            document.body.classList.add('tv-mode');
+            renderTvLeaderboard();
+            setInterval(renderTvLeaderboard, 8000);
+        } else {
+            resize();
+            requestAnimationFrame(loop);
+        }
+    </script>
 </body>
+
 </html>
