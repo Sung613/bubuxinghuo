@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
@@ -15,11 +16,13 @@
             -webkit-touch-callout: none;
             -webkit-tap-highlight-color: transparent;
         }
+
         input,
         textarea {
             user-select: text;
             -webkit-user-select: text;
         }
+
         html,
         body {
             width: 100%;
@@ -33,6 +36,7 @@
             justify-content: center;
             align-items: center;
         }
+
         #game-container {
             position: relative;
             width: 100%;
@@ -44,12 +48,14 @@
             border-right: 1px solid #263042;
             overflow: hidden;
         }
+
         canvas {
             display: block;
             width: 100%;
             height: 100%;
             touch-action: none;
         }
+
         #hud {
             position: absolute;
             top: 14px;
@@ -63,6 +69,7 @@
             pointer-events: none;
             z-index: 6;
         }
+
         .hud-pill {
             background: rgba(13, 17, 23, 0.78);
             border: 1px solid rgba(139, 148, 158, 0.25);
@@ -73,6 +80,7 @@
             align-items: center;
             gap: 8px;
         }
+
         #sound-btn {
             pointer-events: auto;
             width: auto;
@@ -83,6 +91,7 @@
             background: rgba(33, 38, 45, 0.9);
             border: 1px solid #30363d;
         }
+
         #milestone-banner {
             position: absolute;
             top: 62px;
@@ -101,10 +110,12 @@
             z-index: 7;
             white-space: nowrap;
         }
+
         #milestone-banner.show {
             opacity: 1;
             transform: translate(-50%, 0);
         }
+
         .overlay {
             position: absolute;
             inset: 0;
@@ -118,21 +129,25 @@
             text-align: center;
             z-index: 10;
         }
+
         .hidden {
             display: none !important;
         }
+
         h1 {
             color: #ff5555;
             font-size: 28px;
             margin-bottom: 8px;
             text-shadow: 0 0 14px rgba(255, 85, 85, 0.45);
         }
+
         .subtitle {
             color: #8b949e;
             font-size: 14px;
             line-height: 1.5;
             margin-bottom: 18px;
         }
+
         input {
             width: 84%;
             padding: 12px 14px;
@@ -145,9 +160,11 @@
             text-align: center;
             outline: none;
         }
+
         input:focus {
             border-color: #ff5555;
         }
+
         button {
             width: 84%;
             padding: 13px;
@@ -161,18 +178,22 @@
             margin-bottom: 10px;
             transition: transform 0.1s ease, background 0.15s ease;
         }
+
         button:active:not(:disabled) {
             transform: scale(0.97);
         }
+
         button:disabled {
             opacity: 0.85;
             cursor: default;
         }
+
         button.secondary {
             background: #21262d;
             border: 1px solid #30363d;
             font-weight: 600;
         }
+
         #diag-msg {
             width: 90%;
             min-height: 20px;
@@ -181,6 +202,7 @@
             color: #f59e0b;
             word-break: break-all;
         }
+
         .quiz-box {
             background: #161b22;
             border: 1px solid #f59e0b;
@@ -189,8 +211,11 @@
             width: 100%;
             max-height: 78vh;
             overflow-y: auto;
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
             margin-bottom: 12px;
         }
+
         .quiz-q {
             font-size: 15px;
             font-weight: 700;
@@ -198,6 +223,7 @@
             color: #fff;
             line-height: 1.45;
         }
+
         .quiz-opt {
             width: 100%;
             text-align: left;
@@ -208,16 +234,19 @@
             font-weight: 500;
             font-size: 14px;
         }
+
         .quiz-opt.correct {
             background: rgba(63, 185, 80, 0.22);
             border-color: #3fb950;
             color: #7ee787;
         }
+
         .quiz-opt.wrong {
             background: rgba(248, 81, 73, 0.22);
             border-color: #f85149;
             color: #ffa198;
         }
+
         .quiz-explain {
             display: none;
             margin-top: 10px;
@@ -230,24 +259,53 @@
             color: #e6edf3;
             text-align: left;
         }
+
         .quiz-explain.show {
             display: block;
         }
+
         #quiz-next-btn {
             width: 100%;
             margin-top: 10px;
             margin-bottom: 0;
         }
+
+        .rank-status {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #8b949e;
+            margin-bottom: 6px;
+            padding: 0 2px;
+        }
+
+        .rank-refresh-btn {
+            width: auto;
+            margin: 0;
+            padding: 3px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+        }
+
         .rank-list {
             width: 100%;
             max-height: 250px;
             overflow-y: auto;
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
             background: #0d1117;
             border-radius: 8px;
             padding: 8px 12px;
             margin-bottom: 16px;
             border: 1px solid #30363d;
         }
+
         .rank-item {
             display: flex;
             justify-content: space-between;
@@ -255,21 +313,33 @@
             border-bottom: 1px solid #1c222b;
             font-size: 14px;
         }
+
+        .rank-item.is-me {
+            background: rgba(88, 166, 255, 0.12);
+            border-radius: 6px;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+
         .rank-item:last-child {
             border-bottom: none;
         }
+
         .rank-item:nth-child(1) {
             color: #ffd700;
             font-weight: 700;
         }
+
         .rank-item:nth-child(2) {
             color: #d0d7de;
             font-weight: 700;
         }
+
         .rank-item:nth-child(3) {
             color: #d97706;
             font-weight: 700;
         }
+
         .hint-bar {
             position: absolute;
             bottom: 16px;
@@ -281,11 +351,13 @@
             pointer-events: none;
             z-index: 5;
         }
+
         body.tv-mode {
             overflow: auto;
             display: block;
             background: radial-gradient(circle at top, #1b2436 0%, #0d1117 65%);
         }
+
         body.tv-mode #game-container,
         body.tv-mode #hud,
         body.tv-mode #milestone-banner,
@@ -295,6 +367,7 @@
         body.tv-mode #over-screen {
             display: none !important;
         }
+
         #tv-view {
             display: none;
             min-height: 100vh;
@@ -302,11 +375,13 @@
             max-width: 1280px;
             margin: 0 auto;
         }
+
         body.tv-mode #tv-view {
             display: flex;
             flex-direction: column;
             gap: 24px;
         }
+
         .tv-header {
             display: flex;
             justify-content: space-between;
@@ -314,12 +389,14 @@
             border-bottom: 1px solid #263042;
             padding-bottom: 18px;
         }
+
         .tv-title {
             font-size: 36px;
             font-weight: 800;
             color: #ff6b6b;
             letter-spacing: 1px;
         }
+
         .tv-meta {
             display: flex;
             align-items: center;
@@ -327,6 +404,7 @@
             font-size: 15px;
             color: #8b949e;
         }
+
         .tv-refresh-btn {
             width: auto;
             margin: 0;
@@ -335,6 +413,7 @@
             background: #21262d;
             border: 1px solid #30363d;
         }
+
         .tv-board {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -344,6 +423,7 @@
             border-radius: 16px;
             padding: 24px 28px;
         }
+
         .tv-row {
             display: flex;
             justify-content: space-between;
@@ -354,42 +434,51 @@
             border: 1px solid #1c222b;
             font-size: 20px;
         }
+
         .tv-row:nth-child(1) {
             border-color: rgba(255, 215, 0, 0.6);
             color: #ffd700;
             font-weight: 800;
         }
+
         .tv-row:nth-child(2) {
             border-color: rgba(208, 215, 222, 0.45);
             color: #e6edf3;
             font-weight: 700;
         }
+
         .tv-row:nth-child(3) {
             border-color: rgba(217, 119, 6, 0.5);
             color: #f59e0b;
             font-weight: 700;
         }
+
         .tv-score {
             color: #ff6b6b;
             font-weight: 800;
         }
+
         @media (max-width: 768px) {
             body.tv-mode #tv-view {
                 padding: 20px 16px;
             }
+
             .tv-title {
                 font-size: 24px;
             }
+
             .tv-board {
                 grid-template-columns: 1fr;
                 padding: 16px;
             }
+
             .tv-row {
                 font-size: 16px;
             }
         }
     </style>
 </head>
+
 <body>
     <div id="game-container">
         <div id="hud">
@@ -430,9 +519,13 @@
                 本次高度：<strong id="final-score" style="color:#ff5555; font-size:22px;">0</strong> m
                 <span id="best-badge" style="display:block; color:#ffd700; font-size:13px; margin-top:4px;"></span>
             </p>
+            <div class="rank-status">
+                <span id="rank-summary">准备同步全员榜单...</span>
+                <button class="rank-refresh-btn" type="button" onclick="renderLeaderboard()">刷新</button>
+            </div>
             <div class="rank-list" id="rank-list"></div>
-            <button type="button" onclick="restartGame()">再来一局刷榜</button>
-            <button class="secondary" type="button" onclick="backToStart()">更换昵称</button>
+            <button id="restart-btn" type="button" onclick="restartGame()">再来一局刷榜</button>
+            <button id="back-start-btn" class="secondary" type="button" onclick="backToStart()">更换昵称</button>
         </div>
     </div>
     <div id="tv-view">
@@ -457,6 +550,14 @@
             const el = document.getElementById('diag-msg');
             if (el) el.innerText = msg || '';
         }
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
         window.onerror = function (message, source, lineno) {
             setDiag(`错误 (${lineno || '?'}行): ${message || '未知错误'}`);
         };
@@ -469,6 +570,7 @@
         const LOCAL_RANK_KEY = 'youth_game_rank';
         const IS_TV_MODE = new URLSearchParams(window.location.search).get('mode') === 'tv';
         let cloudSyncOk = false;
+        let lastCloudError = '';
 
         function hasCloudConfig() {
             return typeof SUPABASE_URL === 'string' &&
@@ -485,32 +587,42 @@
         }
         function writeLocalRank(list) {
             try {
-                localStorage.setItem(LOCAL_RANK_KEY, JSON.stringify((list || []).slice(0, 30)));
+                localStorage.setItem(LOCAL_RANK_KEY, JSON.stringify(list || []));
             } catch { }
         }
         async function fetchLeaderboard() {
             if (!hasCloudConfig()) {
                 cloudSyncOk = false;
+                lastCloudError = '未配置云端榜单';
                 return readLocalRank();
             }
             try {
-                const url = `${SUPABASE_URL}/rest/v1/leaderboard?select=name,score&order=score.desc&limit=30`;
-                const res = await fetch(url, {
-                    headers: {
-                        apikey: SUPABASE_ANON_KEY.trim(),
-                        Authorization: `Bearer ${SUPABASE_ANON_KEY.trim()}`
-                    }
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const rows = await res.json();
-                const normalized = rows.map(r => ({ name: r.name, score: Number(r.score) || 0 }));
+                const pageSize = 1000;
+                const allRows = [];
+                for (let offset = 0; offset < 10000; offset += pageSize) {
+                    const url = `${SUPABASE_URL}/rest/v1/leaderboard?select=name,score&order=score.desc&limit=${pageSize}&offset=${offset}`;
+                    const res = await fetch(url, {
+                        headers: {
+                            apikey: SUPABASE_ANON_KEY.trim(),
+                            Authorization: `Bearer ${SUPABASE_ANON_KEY.trim()}`
+                        }
+                    });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const rows = await res.json();
+                    if (!Array.isArray(rows) || rows.length === 0) break;
+                    allRows.push(...rows);
+                    if (rows.length < pageSize) break;
+                }
+                const normalized = allRows.map(r => ({ name: r.name, score: Number(r.score) || 0 }));
                 writeLocalRank(normalized);
                 cloudSyncOk = true;
+                lastCloudError = '';
                 setDiag('');
                 return normalized;
             } catch (err) {
                 cloudSyncOk = false;
                 const msg = err && err.message ? err.message : String(err);
+                lastCloudError = msg;
                 console.warn('[leaderboard] fetch failed:', msg);
                 setDiag(`云端读取失败，已回退本地：${msg}`);
                 return readLocalRank();
@@ -560,9 +672,12 @@
                         });
                         if (!insRes.ok) throw new Error(`POST ${insRes.status}`);
                         cloudSyncOk = true;
+                        lastCloudError = '';
                         setDiag('');
                         return true;
                     }
+                    cloudSyncOk = true;
+                    lastCloudError = '';
                     return false;
                 }
                 if (numericScore > prevCloudBest) {
@@ -581,15 +696,18 @@
                     });
                     if (!patchRes.ok) throw new Error(`PATCH ${patchRes.status}`);
                     cloudSyncOk = true;
+                    lastCloudError = '';
                     setDiag('');
                     return true;
                 }
                 cloudSyncOk = true;
+                lastCloudError = '';
                 setDiag('');
                 return false;
             } catch (err) {
                 cloudSyncOk = false;
                 const msg = err && err.message ? err.message : String(err);
+                lastCloudError = msg;
                 console.warn('[leaderboard] save failed:', msg);
                 setDiag(`云端提交失败，已存本地：${msg}`);
                 return improved;
@@ -597,25 +715,41 @@
         }
         async function renderLeaderboard() {
             const container = document.getElementById('rank-list');
+            const summaryEl = document.getElementById('rank-summary');
+            if (summaryEl) summaryEl.innerText = '正在同步全员榜单...';
             container.innerHTML = '<div style="color:#8b949e; padding:22px;">正在同步全员榜单...</div>';
             const list = await fetchLeaderboard();
+            if (summaryEl) {
+                if (hasCloudConfig() && cloudSyncOk) {
+                    summaryEl.innerText = `☁️ 云端全员榜单 · 共 ${list.length} 人`;
+                } else {
+                    const reason = lastCloudError ? `（${lastCloudError}）` : '';
+                    summaryEl.innerText = `📱 本地榜单 · 共 ${list.length} 人${reason}`;
+                }
+            }
             if (!list || list.length === 0) {
                 container.innerHTML = '<div style="color:#8b949e; padding:22px;">暂无成绩，快来抢占榜首！</div>';
                 return;
             }
-            container.innerHTML = list.map((item, index) => `
-    <div class="rank-item">
-      <span>#${index + 1} ${escapeHtml(item.name)}</span>
-      <span>${item.score} m</span>
+            const activeName = username !== '匿名极客' ? username : '';
+            container.innerHTML = list.map((item, index) => {
+                const isMe = activeName && item.name === activeName;
+                return `
+    <div class="rank-item${isMe ? ' is-me' : ''}">
+      <span>#${index + 1} ${escapeHtml(item.name)}${isMe ? '（我）' : ''}</span>
+      <span>${Number(item.score) || 0} m</span>
     </div>
-  `).join('');
+  `;
+            }).join('');
         }
         async function renderTvLeaderboard() {
             const board = document.getElementById('tv-rank-list');
             const statusEl = document.getElementById('tv-sync-status');
             const list = await fetchLeaderboard();
             const nowStr = new Date().toLocaleTimeString('zh-CN', { hour12: false });
-            statusEl.innerText = (hasCloudConfig() && cloudSyncOk) ? `云端同步 · ${nowStr}` : `本地缓存 · ${nowStr}`;
+            statusEl.innerText = (hasCloudConfig() && cloudSyncOk)
+                ? `云端同步 · 共 ${list.length} 人（显示前20名）· ${nowStr}`
+                : `本地缓存 · 共 ${list.length} 人（显示前20名）· ${nowStr}`;
             if (!list || list.length === 0) {
                 board.innerHTML = '<div style="color:#8b949e; padding:18px;">暂无成绩，等待首位挑战者诞生！</div>';
                 return;
@@ -623,7 +757,7 @@
             board.innerHTML = list.slice(0, 20).map((item, idx) => `
     <div class="tv-row">
       <span>#${idx + 1} ${escapeHtml(item.name)}</span>
-      <span class="tv-score">${item.score} m</span>
+      <span class="tv-score">${Number(item.score) || 0} m</span>
     </div>
   `).join('');
         }
@@ -1059,15 +1193,20 @@
                     });
                     const isRight = idx === qObj.ans;
                     pendingQuizCorrect = isRight;
-                    explainEl.innerHTML = `
+                    try {
+                        explainEl.innerHTML = `
         <div style="font-weight:700; color:${isRight ? '#3fb950' : '#f85149'}; margin-bottom:4px;">
-          ${isRight ? '✅ 回答正确！可复活并 +100m' : '❌ 回答有误！正确答案：' + qObj.opts[qObj.ans]}
+          ${isRight ? '✅ 回答正确！可复活并 +100m' : '❌ 回答有误！正确答案：' + escapeHtml(qObj.opts[qObj.ans])}
         </div>
         <div>${escapeHtml(qObj.tip)}</div>
       `;
-                    explainEl.classList.add('show');
-                    nextBtn.innerText = isRight ? '下一步：复活继续 (+100m)' : '下一步：查看结算与排行';
-                    nextBtn.classList.remove('hidden');
+                    } catch (err) {
+                        explainEl.innerText = isRight ? '✅ 回答正确！可复活并 +100m' : '❌ 回答有误！';
+                    } finally {
+                        explainEl.classList.add('show');
+                        nextBtn.innerText = isRight ? '下一步：复活继续 (+100m)' : '下一步：查看结算与排行';
+                        nextBtn.classList.remove('hidden');
+                    }
                 };
                 optBox.appendChild(btn);
             });
@@ -1098,6 +1237,10 @@
             document.getElementById('final-score').innerText = score;
             document.getElementById('best-badge').innerText = '';
             document.getElementById('rank-list').innerHTML = '<div style="color:#8b949e; padding:22px;">正在同步全员榜单...</div>';
+            const restartBtn = document.getElementById('restart-btn');
+            const backStartBtn = document.getElementById('back-start-btn');
+            if (restartBtn) restartBtn.classList.remove('hidden');
+            if (backStartBtn) backStartBtn.innerText = '更换昵称';
             const overScreen = document.getElementById('over-screen');
             overScreen.classList.remove('hidden');
             overScreen.style.display = '';
@@ -1109,6 +1252,18 @@
             });
         }
         function showLeaderboard() {
+            const inputEl = document.getElementById('username');
+            const inputName = inputEl && typeof inputEl.value === 'string' ? inputEl.value.trim() : '';
+            if (inputName) {
+                username = inputName;
+                const tagEl = document.getElementById('player-tag');
+                if (tagEl) tagEl.innerText = username;
+            }
+            const hasValidPlayer = username && username !== '匿名极客';
+            const restartBtn = document.getElementById('restart-btn');
+            const backStartBtn = document.getElementById('back-start-btn');
+            if (restartBtn) restartBtn.classList.toggle('hidden', !hasValidPlayer);
+            if (backStartBtn) backStartBtn.innerText = hasValidPlayer ? '更换昵称' : '返回开始游戏';
             const startScreen = document.getElementById('start-screen');
             const overScreen = document.getElementById('over-screen');
             if (startScreen) {
@@ -1124,7 +1279,7 @@
             document.getElementById('best-badge').innerText = '';
             renderLeaderboard();
         }
-        
+
         function drawRoundedRect(x, y, w, h, r) {
             ctx.beginPath();
             ctx.moveTo(x + r, y);
@@ -1279,4 +1434,5 @@
         }
     </script>
 </body>
+
 </html>
