@@ -1124,15 +1124,15 @@
             document.getElementById('best-badge').innerText = '';
             renderLeaderboard();
         }
-        function escapeHtml(str) {
-            return String(str).replace(/[&<>"']/g, m => ({
-                '&': '&',
-                '<': '<',
-                '>': '>',
-                '"': '"',
-                "'": '''
-            }[m]));
-        }
+       function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
+}
         function drawRoundedRect(x, y, w, h, r) {
             ctx.beginPath();
             ctx.moveTo(x + r, y);
